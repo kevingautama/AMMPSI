@@ -5,13 +5,11 @@ using System.Threading.Tasks;
 
 namespace AMMPSI.Models
 {
-    public class Location : Audit
+    public class LocationViewModel
     {
         public int ID { get; set; }
         public string Name { get; set; }
         public string Floor { get; set; }
-        public string Description { get; set; }
-        public ICollection<Movement> Movement { get; set; }
-        public ICollection<MovementLog> MovementLog { get; set; }
+        public String TotalAsset { get; set; }
     }
 }

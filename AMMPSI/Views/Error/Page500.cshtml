@@ -1,0 +1,15 @@
+﻿
+@{
+    ViewData["Title"] = "Page500";
+    Layout = "~/Views/Shared/_LayoutError.cshtml";
+}
+
+<div class="error-area ptb--100 text-center">
+    <div class="container">
+        <div class="error-content">
+            <h2>500</h2>
+            <p>Internal Server Error!</p>
+            <a href="@Url.Action("Index","Home")">Back to Dashboard</a>
+        </div>
+    </div>
+</div>

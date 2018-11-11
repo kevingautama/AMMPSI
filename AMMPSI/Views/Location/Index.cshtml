@@ -1,0 +1,89 @@
+﻿@{
+    ViewData["Title"] = "Location";
+    ViewData["BreadCrumb"] = "Location";
+}
+@section DataTableSytleSheets{
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.18/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.jqueryui.min.css">
+}
+
+
+<div class="row">
+    <!-- Primary table start -->
+    <div class="col-12 mt-5">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="header-title"><button type="button" class="btn btn-sm btn-primary">Add</button></h4>
+                <div class="data-tables datatable-primary">
+                    <table id="locationDataTable" class="text-center">
+                        <thead class="text-capitalize">
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Floor</th>
+                                <th>TotalAsset</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Primary table end -->
+</div>
+
+@section DataTableScripts{
+    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+    <script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.3/js/responsive.bootstrap.min.js"></script>
+}
+
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            $("#locationDataTable").DataTable({
+                "responsive": true,
+                "processing": true, // for show progress bar
+                "serverSide": true, // for process server side
+                "filter": true, // this is for disable filter (search box)
+                "orderMulti": false, // for disable multiple column at once
+                "ajax": {
+                    "url": "/Location/GetLocationTableData",
+                    "type": "POST",
+                    "datatype": "json"
+                },
+                "columnDefs":
+                    [{
+                        "targets": [0],
+                        "visible": false,
+                        "searchable": false
+                    }],
+                "columns": [
+                    { "data": "ID", "name": "ID", "autoWidth": true },
+                    { "data": "Name", "name": "Name", "autoWidth": true },
+                    { "data": "Floor", "name": "Floor", "autoWidth": true },
+                    { "data": "TotalAsset", "name": "Total Asset", "autoWidth": true },
+                    {
+                        "render": function (data, type, full, meta) {
+
+                            var returnStr = '<a class="btn btn-sm btn-primary" href="/Location/Edit?id=' + full.ID + '"><em class="fa fa-edit" style="color:white"></em></a>&nbsp;' +
+                                '<a class="btn btn-sm btn-success" href="/Location/Detail?id=' + full.ID + '" ><em class="fa fa-eye" style="color:white"></em></a>&nbsp;' +
+                                '<a class="btn btn-sm btn-danger" href="/Location/Delete?id=' + full.ID + '" ><em class="fa fa-trash-o" style="color:white"></em></a>&nbsp;';
+                            return returnStr;
+                        }
+                    }
+
+                ]
+
+            });
+        });
+    </script>
+
+}

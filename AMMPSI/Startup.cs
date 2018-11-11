@@ -63,6 +63,7 @@ namespace AMMPSI
                 app.UseBrowserLink();
                 app.UseDeveloperExceptionPage();
                 app.UseDatabaseErrorPage();
+                app.UseStatusCodePagesWithRedirects("/error/page{0}");
             }
             else
             {
