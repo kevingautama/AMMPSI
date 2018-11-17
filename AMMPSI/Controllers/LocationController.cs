@@ -63,7 +63,7 @@ namespace AMMPSI.Controllers
 
                 List<LocationViewModel> locationData = new List<LocationViewModel>();
                 // getting all Proposal data 
-                var locationList = await _context.Location.ToListAsync();
+                var locationList = await _context.Location.Where(a => a.DeletedDate == null).ToListAsync();
 
                 foreach(var item in locationList)
                 {
@@ -104,9 +104,109 @@ namespace AMMPSI.Controllers
         [HttpPost]
         public async Task<IActionResult> GetLocation(int id)
         {
-            var data = await _context.Location.FindAsync(id);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-            return Ok(data);
+            var location = await _context.Location.FindAsync(id);
+
+            if (location == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(location);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddLocation(Location location)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            _context.Location.Add(location);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetLocation", new { id = location.ID }, location);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditLocation(int id, Location location)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (id != location.ID)
+            {
+                return BadRequest();
+            }
+
+            location.UpdatedDate = DateTime.Now;
+            _context.Entry(location).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!LocationExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteLocation(int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var location = _context.Location.SingleOrDefault(m => m.ID == id);
+            if (location == null)
+            {
+                return NotFound();
+            }
+
+            location.DeletedDate = DateTime.Now;
+            _context.Entry(location).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!LocationExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        private bool LocationExists(int id)
+        {
+            return _context.Location.Any(e => e.ID == id);
         }
     }
 }

@@ -15,7 +15,7 @@
     <div class="col-12 mt-5">
         <div class="card">
             <div class="card-body">
-                <h4 class="header-title"><button type="button" class="btn btn-sm btn-primary">Add</button></h4>
+                <h4 class="header-title"><button type="button" id="btnAddModal" class="btn btn-sm btn-primary">Add</button></h4>
                 <div class="data-tables datatable-primary">
                     <table id="locationDataTable" class="text-center">
                         <thead class="text-capitalize">
@@ -37,6 +37,83 @@
     <!-- Primary table end -->
 </div>
 
+@*Modal*@
+
+<div class="modal fade" id="addLocationModal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Location</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="col-form-label">Name</label>
+                    <input class="form-control" type="text" id="name">
+                </div>
+                <div class="form-group">
+                    <label class="col-form-label">Floor</label>
+                    <input class="form-control" type="number" id="floor">
+                </div>
+                <div class="form-group">
+                    <label class="col-form-label">Description</label>
+                    <textarea class="form-control" rows="5" id="description"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn">Cancel</button>
+                <button type="button" id="btnSave" class="btn btn-success">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="detailLocationModal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detail</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="col-form-label">Name</label>
+                    <input class="form-control" type="text" id="name">
+                </div>
+                <div class="form-group">
+                    <label class="col-form-label">Floor</label>
+                    <input class="form-control" type="number" id="floor">
+                </div>
+                <div class="form-group">
+                    <label class="col-form-label">Description</label>
+                    <textarea class="form-control" rows="5" id="description"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnSave" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteLocationModal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmation Message</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p> Are you sure to delete this Location? This operation is ireverssible.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn">Cancel</button>
+                <button type="button" id="btnDelete" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section DataTableScripts{
     <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
     <script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>
@@ -48,7 +125,8 @@
 @section Scripts{
     <script>
         $(document).ready(function () {
-            $("#locationDataTable").DataTable({
+            var data;
+            var table = $("#locationDataTable").DataTable({
                 "responsive": true,
                 "processing": true, // for show progress bar
                 "serverSide": true, // for process server side
@@ -73,9 +151,8 @@
                     {
                         "render": function (data, type, full, meta) {
 
-                            var returnStr = '<a class="btn btn-sm btn-primary" href="/Location/Edit?id=' + full.ID + '"><em class="fa fa-edit" style="color:white"></em></a>&nbsp;' +
-                                '<a class="btn btn-sm btn-success" href="/Location/Detail?id=' + full.ID + '" ><em class="fa fa-eye" style="color:white"></em></a>&nbsp;' +
-                                '<a class="btn btn-sm btn-danger" href="/Location/Delete?id=' + full.ID + '" ><em class="fa fa-trash-o" style="color:white"></em></a>&nbsp;';
+                            var returnStr = '<button class="btn btn-sm btn-success" id="btnDetailModal"><em class="fa fa-eye" style="color:white"></em></button>&nbsp;' +
+                                '<button class="btn btn-sm btn-danger" id="btnDeleteModal"><em class="fa fa-trash-o" style="color:white"></em></button>&nbsp;';
                             return returnStr;
                         }
                     }
@@ -83,7 +160,93 @@
                 ]
 
             });
-        });
+
+
+            // Load Data For Modal
+            $(document).on('click', '#btnAddModal', function () {
+                $('#addLocationModal').modal();
+            });
+
+            $(document).on('click', '#btnDetailModal', function () {
+                var id = table.row($(this).closest('tr')).data().ID;
+                $.post('/Location/GetLocation', { id: id }, function (returnedData) {
+                    $('#detailLocationModal').modal();
+                    data = returnedData;
+                    $('#detailLocationModal').find('#name').val(data.Name);
+                    $('#detailLocationModal').find('#floor').val(data.Floor);
+                    $('#detailLocationModal').find('#description').val(data.Description);
+                }).fail(function () {
+                    console.log("error");
+                },"json"); 
+            });
+
+            $(document).on('click', '#btnDeleteModal', function () {
+                var id = table.row($(this).closest('tr')).data().ID;
+                $('#deleteLocationModal').modal();
+                data = id;
+            });
+
+
+            // Add Edit Delete Operation
+            $('#detailLocationModal').on('click', '#btnSave', function () {
+                data.Name = $('#detailLocationModal').find('#name').val();
+                data.Floor = $('#detailLocationModal').find('#floor').val();
+                data.Description = $('#detailLocationModal').find('#description').val();
+                $.post('/Location/EditLocation', { id: data.ID, location: data }, function (returnedData) {
+                    table.ajax.reload();
+                    $('#detailLocationModal').modal('hide');
+                }).fail(function () {
+                    console.log("error");
+                }, "json"); 
+            });
+
+            $('#deleteLocationModal').on('click', '#btnDelete', function () {
+                $.post('/Location/DeleteLocation', { id: data}, function (returnedData) {
+                    table.ajax.reload();
+                    $('#deleteLocationModal').modal('hide');
+                }).fail(function () {
+                    console.log("error");
+                }, "json");
+            });
+
+            $('#addLocationModal').on('click', '#btnSave', function () {
+                data = {
+                    Name : $('#addLocationModal').find('#name').val(),
+                    Floor : $('#addLocationModal').find('#floor').val(),
+                    Description : $('#addLocationModal').find('#description').val()
+                };
+
+                $.post('/Location/AddLocation', { location: data }, function (returnedData) {
+                    table.ajax.reload();
+                    console.log(returnedData);
+                    $('#addLocationModal').modal('hide');
+                }).fail(function () {
+                    console.log("error");
+                }, "json");
+            });
+
+
+            // Clean Data after Modal Close
+
+            $('#detailLocationModal').on('hidden.bs.modal', function (e) {
+                data = [];
+                $('#detailLocationModal').find('#name').val("");
+                $('#detailLocationModal').find('#floor').val("");
+                $('#detailLocationModal').find('#description').val("");
+            });
+
+            $('#deleteLocationModal').on('hidden.bs.modal', function (e) {
+                data = [];
+            });
+
+            $('#addLocationModal').on('hidden.bs.modal', function (e) {
+                data = [];
+                $('#addLocationModal').find('#name').val("");
+                $('#addLocationModal').find('#floor').val("");
+                $('#addLocationModal').find('#description').val("");
+            });
+        });  
+
     </script>
 
 }
