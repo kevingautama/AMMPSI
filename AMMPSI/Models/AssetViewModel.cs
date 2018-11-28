@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 
 namespace AMMPSI.Models
 {
-    public class LocationViewModel : Location
+    public class AssetViewModel : Asset
     {
-        public String TotalAsset { get; set; }
+        public String CategoryName { get; set; }
+        public string CurrentLocation { get; set; }
     }
 }

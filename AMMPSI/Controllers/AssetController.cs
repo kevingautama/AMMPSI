@@ -10,11 +10,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AMMPSI.Controllers
 {
-    public class LocationController : Controller
+    public class AssetController : Controller
     {
         private readonly AMContext _context;
 
-        public LocationController(AMContext context)
+        public AssetController(AMContext context)
         {
             _context = context;
         }
@@ -25,7 +25,7 @@ namespace AMMPSI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetLocationTableData()
+        public async Task<IActionResult> GetAssetTableData()
         {
             try
             {
@@ -56,36 +56,37 @@ namespace AMMPSI.Controllers
 
 
 
-                List<LocationViewModel> locationData = new List<LocationViewModel>();
+                List<AssetViewModel> AssetData = new List<AssetViewModel>();
                 // getting all Proposal data 
-                var locationList = await _context.Location.Where(a => a.DeletedDate == null).ToListAsync();
+                var AssetList = await _context.Asset.Where(a => a.DeletedDate == null).ToListAsync();
 
-                foreach(var item in locationList)
+                foreach (var item in AssetList)
                 {
-                    locationData.Add(new LocationViewModel
+                    var category = await _context.Category.FindAsync(item.CategoryID);
+                    AssetData.Add(new AssetViewModel
                     {
                         ID = item.ID,
                         Name = item.Name,
-                        Floor = item.Floor,
-                        TotalAsset = "Infinity"
+                        CategoryName = category.Name,
+                        CurrentLocation = "skrap"
                     });
                 }
 
                 //Sorting  
                 if (!(string.IsNullOrEmpty(sortColumn) && string.IsNullOrEmpty(sortColumnDirection)))
                 {
-                    locationData = locationData.AsQueryable().OrderBy(sortColumn + " " + sortColumnDirection).ToList();
+                    AssetData = AssetData.AsQueryable().OrderBy(sortColumn + " " + sortColumnDirection).ToList();
                 }
                 //Search  
                 if (!string.IsNullOrEmpty(searchValue))
                 {
-                    locationData = locationData.Where(m => m.Name.Contains(searchValue) || m.Floor.Contains(searchValue)).ToList();
+                    AssetData = AssetData.Where(m => m.Name.Contains(searchValue)).ToList();
                 }
 
                 //total number of rows counts   
-                recordsTotal = locationData.Count();
+                recordsTotal = AssetData.Count();
                 //Paging   
-                var data = locationData.Skip(skip).Take(pageSize).ToList();
+                var data = AssetData.Skip(skip).Take(pageSize).ToList();
                 //Returning Json Data  
                 return Json(new { draw = draw, recordsFiltered = recordsTotal, recordsTotal = recordsTotal, data = data });
 
@@ -97,52 +98,52 @@ namespace AMMPSI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetLocation(int id)
+        public async Task<IActionResult> GetAsset(int id)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var location = await _context.Location.FindAsync(id);
+            var Asset = await _context.Asset.FindAsync(id);
 
-            if (location == null)
+            if (Asset == null)
             {
                 return NotFound();
             }
 
-            return Ok(location);
+            return Ok(Asset);
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddLocation(Location location)
+        public async Task<IActionResult> AddAsset(Asset Asset)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            _context.Location.Add(location);
+            _context.Asset.Add(Asset);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetLocation", new { id = location.ID }, location);
+            return CreatedAtAction("GetAsset", new { id = Asset.ID }, Asset);
         }
 
         [HttpPost]
-        public async Task<IActionResult> EditLocation(int id, Location location)
+        public async Task<IActionResult> EditAsset(int id, Asset Asset)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (id != location.ID)
+            if (id != Asset.ID)
             {
                 return BadRequest();
             }
 
-            location.UpdatedDate = DateTime.Now;
-            _context.Entry(location).State = EntityState.Modified;
+            Asset.UpdatedDate = DateTime.Now;
+            _context.Entry(Asset).State = EntityState.Modified;
 
             try
             {
@@ -150,7 +151,7 @@ namespace AMMPSI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!LocationExists(id))
+                if (!AssetExists(id))
                 {
                     return NotFound();
                 }
@@ -164,21 +165,21 @@ namespace AMMPSI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> DeleteLocation(int id)
+        public async Task<IActionResult> DeleteAsset(int id)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var location = _context.Location.SingleOrDefault(m => m.ID == id);
-            if (location == null)
+            var Asset = _context.Asset.SingleOrDefault(m => m.ID == id);
+            if (Asset == null)
             {
                 return NotFound();
             }
 
-            location.DeletedDate = DateTime.Now;
-            _context.Entry(location).State = EntityState.Modified;
+            Asset.DeletedDate = DateTime.Now;
+            _context.Entry(Asset).State = EntityState.Modified;
 
             try
             {
@@ -186,7 +187,7 @@ namespace AMMPSI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!LocationExists(id))
+                if (!AssetExists(id))
                 {
                     return NotFound();
                 }
@@ -199,9 +200,9 @@ namespace AMMPSI.Controllers
             return NoContent();
         }
 
-        private bool LocationExists(int id)
+        private bool AssetExists(int id)
         {
-            return _context.Location.Any(e => e.ID == id);
+            return _context.Asset.Any(e => e.ID == id);
         }
     }
 }

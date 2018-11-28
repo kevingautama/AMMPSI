@@ -1,6 +1,6 @@
 ﻿@{
-    ViewData["Title"] = "Location";
-    ViewData["BreadCrumb"] = "Location";
+    ViewData["Title"] = "Asset";
+    ViewData["BreadCrumb"] = "Asset";
 }
 @section DataTableSytleSheets{
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
@@ -16,18 +16,17 @@
             <div class="card-body">
                 <h4 class="header-title"><button type="button" id="btnAddModal" class="btn btn-sm btn-primary">Add</button></h4>
                 <div class="data-tables datatable-primary">
-                    <table id="locationDataTable" class="text-center">
+                    <table id="AssetDataTable" class="text-center">
                         <thead class="text-capitalize">
                             <tr>
                                 <th>ID</th>
                                 <th>Name</th>
-                                <th>Floor</th>
-                                <th>TotalAsset</th>
+                                <th>Category</th>
+                                <th>Location</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
-                        <tbody>
-                        </tbody>
+                        <tbody></tbody>
                     </table>
                 </div>
             </div>
@@ -38,11 +37,11 @@
 
 @*Modal*@
 
-<div class="modal fade" id="addLocationModal">
+<div class="modal fade" id="addAssetModal">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Add Location</h5>
+                <h5 class="modal-title">Add Asset</h5>
                 <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <div class="modal-body">
@@ -51,8 +50,23 @@
                     <input class="form-control" type="text" id="name">
                 </div>
                 <div class="form-group">
-                    <label class="col-form-label">Floor</label>
-                    <input class="form-control" type="number" id="floor">
+                    <label class="col-form-label">Category</label>
+                    <select class="form-control" id="category">
+                        <option value="1">category 1</option>
+                        <option value="2">category 2</option>
+                        <option value="3">category 3</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="col-form-label">Value</label>
+                    <input class="form-control" type="number" id="value">
+                </div>
+                <div class="form-group">
+                    <label class="col-form-label">Moveable</label>
+                    <select class="form-control" id="isMoveable">
+                        <option value="true">True</option>
+                        <option value="false">False</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label class="col-form-label">Description</label>
@@ -67,7 +81,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="detailLocationModal">
+<div class="modal fade" id="detailAssetModal">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -80,8 +94,23 @@
                     <input class="form-control" type="text" id="name">
                 </div>
                 <div class="form-group">
-                    <label class="col-form-label">Floor</label>
-                    <input class="form-control" type="number" id="floor">
+                    <label class="col-form-label">Category</label>
+                    <select class="form-control" id="category">
+                        <option>category 1</option>
+                        <option>category 2</option>
+                        <option>category 3</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="col-form-label">Value</label>
+                    <input class="form-control" type="number" id="value">
+                </div>
+                <div class="form-group">
+                    <label class="col-form-label">Moveable</label>
+                    <select class="form-control" id="isMoveable">
+                        <option value="true">True</option>
+                        <option value="false">False</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label class="col-form-label">Description</label>
@@ -95,7 +124,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="deleteLocationModal">
+<div class="modal fade" id="deleteAssetModal">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -103,7 +132,7 @@
                 <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <div class="modal-body">
-                <p> Are you sure to delete this Location? This operation is ireverssible.</p>
+                <p> Are you sure to delete this Asset? This operation is ireverssible.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" data-dismiss="modal" class="btn">Cancel</button>
@@ -125,14 +154,14 @@
     <script>
         $(document).ready(function () {
             var data;
-            var table = $("#locationDataTable").DataTable({
+            var table = $("#AssetDataTable").DataTable({
                 "responsive": true,
                 "processing": true, // for show progress bar
                 "serverSide": true, // for process server side
                 "filter": true, // this is for disable filter (search box)
                 "orderMulti": false, // for disable multiple column at once
                 "ajax": {
-                    "url": "/Location/GetLocationTableData",
+                    "url": "/Asset/GetAssetTableData",
                     "type": "POST",
                     "datatype": "json"
                 },
@@ -145,11 +174,10 @@
                 "columns": [
                     { "data": "ID", "name": "ID", "autoWidth": true },
                     { "data": "Name", "name": "Name", "autoWidth": true },
-                    { "data": "Floor", "name": "Floor", "autoWidth": true },
-                    { "data": "TotalAsset", "name": "Total Asset", "autoWidth": true },
+                    { "data": "CategoryName", "name": "Category", "autoWidth": true },
+                    { "data": "CurrentLocation" , "name": "Location", "autoWidth": true},
                     {
                         "render": function (data, type, full, meta) {
-
                             var returnStr = '<button class="btn btn-sm btn-success" id="btnDetailModal"><em class="fa fa-eye" style="color:white"></em></button>&nbsp;' +
                                 '<button class="btn btn-sm btn-danger" id="btnDeleteModal"><em class="fa fa-trash-o" style="color:white"></em></button>&nbsp;';
                             return returnStr;
@@ -163,62 +191,70 @@
 
             // Load Data For Modal
             $(document).on('click', '#btnAddModal', function () {
-                $('#addLocationModal').modal();
+                $('#addAssetModal').modal();
             });
 
             $(document).on('click', '#btnDetailModal', function () {
                 var id = table.row($(this).closest('tr')).data().ID;
-                $.post('/Location/GetLocation', { id: id }, function (returnedData) {
-                    $('#detailLocationModal').modal();
+                $.post('/Asset/GetAsset', { id: id }, function (returnedData) {
+                    $('#detailAssetModal').modal();
                     data = returnedData;
-                    $('#detailLocationModal').find('#name').val(data.Name);
-                    $('#detailLocationModal').find('#floor').val(data.Floor);
-                    $('#detailLocationModal').find('#description').val(data.Description);
+                    $('#detailAssetModal').find('#name').val(data.Name);
+                    $('#detailAssetModal').find('#value').val(data.Value);
+                    console.log(data.Value);
+                    //$('#detailAssetModal').find('#category').val(data.Category);
+                    $('#detailAssetModal').find('#isMoveable').val(data.IsMoveable);
+                    $('#detailAssetModal').find('#description').val(data.Description);
                 }).fail(function () {
                     console.log("error");
-                },"json"); 
+                },"json");
             });
 
             $(document).on('click', '#btnDeleteModal', function () {
                 var id = table.row($(this).closest('tr')).data().ID;
-                $('#deleteLocationModal').modal();
+                $('#deleteAssetModal').modal();
                 data = id;
             });
 
 
             // Add Edit Delete Operation
-            $('#detailLocationModal').on('click', '#btnSave', function () {
-                data.Name = $('#detailLocationModal').find('#name').val();
-                data.Floor = $('#detailLocationModal').find('#floor').val();
-                data.Description = $('#detailLocationModal').find('#description').val();
-                $.post('/Location/EditLocation', { id: data.ID, location: data }, function (returnedData) {
+            $('#detailAssetModal').on('click', '#btnSave', function () {
+                data.Name = $('#detailAssetModal').find('#name').val();
+                data.Value = $('#addAssetModal').find('#value').val();
+                data.CategoryID = 1; //$('#addAssetModal').find('#category').val();
+                data.IsMoveable = $('#detailAssetModal').find('#isMoveable').val();
+                console.log($('#detailAssetModal').find('#isMoveable').val());
+                data.Description = $('#detailAssetModal').find('#description').val();
+                $.post('/Asset/EditAsset', { id: data.ID, Asset: data }, function (returnedData) {
                     table.ajax.reload();
-                    $('#detailLocationModal').modal('hide');
-                }).fail(function () {
-                    console.log("error");
-                }, "json"); 
-            });
-
-            $('#deleteLocationModal').on('click', '#btnDelete', function () {
-                $.post('/Location/DeleteLocation', { id: data}, function (returnedData) {
-                    table.ajax.reload();
-                    $('#deleteLocationModal').modal('hide');
+                    $('#detailAssetModal').modal('hide');
                 }).fail(function () {
                     console.log("error");
                 }, "json");
             });
 
-            $('#addLocationModal').on('click', '#btnSave', function () {
+            $('#deleteAssetModal').on('click', '#btnDelete', function () {
+                $.post('/Asset/DeleteAsset', { id: data}, function (returnedData) {
+                    table.ajax.reload();
+                    $('#deleteAssetModal').modal('hide');
+                }).fail(function () {
+                    console.log("error");
+                }, "json");
+            });
+
+            $('#addAssetModal').on('click', '#btnSave', function () {
                 data = {
-                    Name : $('#addLocationModal').find('#name').val(),
-                    Floor : $('#addLocationModal').find('#floor').val(),
-                    Description : $('#addLocationModal').find('#description').val()
+                    Name: $('#addAssetModal').find('#name').val(),
+                    Value: $('#addAssetModal').find('#value').val(),
+                    CategoryID: 1, //$('#addAssetModal').find('#category').val();
+                    IsMoveable: $('#addAssetModal').find('#isMoveable').val(),
+                    Description: $('#addAssetModal').find('#description').val()
                 };
 
-                $.post('/Location/AddLocation', { location: data }, function (returnedData) {
+                $.post('/Asset/AddAsset', { Asset: data }, function (returnedData) {
                     table.ajax.reload();
                     console.log(returnedData);
-                    $('#addLocationModal').modal('hide');
+                    $('#addAssetModal').modal('hide');
                 }).fail(function () {
                     console.log("error");
                 }, "json");
@@ -227,24 +263,20 @@
 
             // Clean Data after Modal Close
 
-            $('#detailLocationModal').on('hidden.bs.modal', function (e) {
+            $('#detailAssetModal').on('hidden.bs.modal', function (e) {
                 data = [];
-                $('#detailLocationModal').find('#name').val("");
-                $('#detailLocationModal').find('#floor').val("");
-                $('#detailLocationModal').find('#description').val("");
+                $('#detailAssetModal').find('#name').val("");
             });
 
-            $('#deleteLocationModal').on('hidden.bs.modal', function (e) {
+            $('#deleteAssetModal').on('hidden.bs.modal', function (e) {
                 data = [];
             });
 
-            $('#addLocationModal').on('hidden.bs.modal', function (e) {
+            $('#addAssetModal').on('hidden.bs.modal', function (e) {
                 data = [];
-                $('#addLocationModal').find('#name').val("");
-                $('#addLocationModal').find('#floor').val("");
-                $('#addLocationModal').find('#description').val("");
+                $('#addAssetModal').find('#name').val("");
             });
-        });  
+        });
 
     </script>
 

@@ -1,71 +1,222 @@
-﻿@model IEnumerable<AMMPSI.Models.Category>
-
-@{
-    ViewData["Title"] = "Index";
+﻿@{
+    ViewData["Title"] = "Category";
+    ViewData["BreadCrumb"] = "Category";
+}
+@section DataTableSytleSheets{
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.18/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.jqueryui.min.css">
 }
 
-<h2>Index</h2>
+<div class="row">
+    <!-- Primary table start -->
+    <div class="col-12 mt-5">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="header-title"><button type="button" id="btnAddModal" class="btn btn-sm btn-primary">Add</button></h4>
+                <div class="data-tables datatable-primary">
+                    <table id="categoryDataTable" class="text-center">
+                        <thead class="text-capitalize">
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Total Asset</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Primary table end -->
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.Name)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.CreatedBy)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.CreatedDate)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.UpdatedBy)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.UpdatedDate)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.DeletedBy)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.DeletedDate)
-                </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreatedBy)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreatedDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UpdatedBy)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UpdatedDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DeletedBy)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DeletedDate)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.ID">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.ID">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.ID">Delete</a>
-            </td>
-        </tr>
+@*Modal*@
+
+<div class="modal fade" id="addCategoryModal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Category</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="col-form-label">Name</label>
+                    <input class="form-control" type="text" id="name">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn">Cancel</button>
+                <button type="button" id="btnSave" class="btn btn-success">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="detailCategoryModal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detail</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="col-form-label">Name</label>
+                    <input class="form-control" type="text" id="name">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnSave" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteCategoryModal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmation Message</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p> Are you sure to delete this Category? This operation is ireverssible.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn">Cancel</button>
+                <button type="button" id="btnDelete" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section DataTableScripts{
+    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+    <script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.3/js/responsive.bootstrap.min.js"></script>
 }
-    </tbody>
-</table>
+
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            var data;
+            var table = $("#categoryDataTable").DataTable({
+                "responsive": true,
+                "processing": true, // for show progress bar
+                "serverSide": true, // for process server side
+                "filter": true, // this is for disable filter (search box)
+                "orderMulti": false, // for disable multiple column at once
+                "ajax": {
+                    "url": "/Category/GetCategoryTableData",
+                    "type": "POST",
+                    "datatype": "json"
+                },
+                "columnDefs":
+                    [{
+                        "targets": [0],
+                        "visible": false,
+                        "searchable": false
+                    }],
+                "columns": [
+                    { "data": "ID", "name": "ID", "autoWidth": true },
+                    { "data": "Name", "name": "Name", "autoWidth": true },
+                    { "data": "TotalAsset", "name": "Total Asset", "autoWidth": true },
+                    {
+                        "render": function (data, type, full, meta) {
+
+                            var returnStr = '<button class="btn btn-sm btn-success" id="btnDetailModal"><em class="fa fa-eye" style="color:white"></em></button>&nbsp;' +
+                                '<button class="btn btn-sm btn-danger" id="btnDeleteModal"><em class="fa fa-trash-o" style="color:white"></em></button>&nbsp;';
+                            return returnStr;
+                        }
+                    }
+
+                ]
+
+            });
+
+
+            // Load Data For Modal
+            $(document).on('click', '#btnAddModal', function () {
+                $('#addCategoryModal').modal();
+            });
+
+            $(document).on('click', '#btnDetailModal', function () {
+                var id = table.row($(this).closest('tr')).data().ID;
+                $.post('/Category/GetCategory', { id: id }, function (returnedData) {
+                    $('#detailCategoryModal').modal();
+                    data = returnedData;
+                    $('#detailCategoryModal').find('#name').val(data.Name);
+                }).fail(function () {
+                    console.log("error");
+                },"json");
+            });
+
+            $(document).on('click', '#btnDeleteModal', function () {
+                var id = table.row($(this).closest('tr')).data().ID;
+                $('#deleteCategoryModal').modal();
+                data = id;
+            });
+
+
+            // Add Edit Delete Operation
+            $('#detailCategoryModal').on('click', '#btnSave', function () {
+                data.Name = $('#detailCategoryModal').find('#name').val();
+                $.post('/Category/EditCategory', { id: data.ID, Category: data }, function (returnedData) {
+                    table.ajax.reload();
+                    $('#detailCategoryModal').modal('hide');
+                }).fail(function () {
+                    console.log("error");
+                }, "json");
+            });
+
+            $('#deleteCategoryModal').on('click', '#btnDelete', function () {
+                $.post('/Category/DeleteCategory', { id: data}, function (returnedData) {
+                    table.ajax.reload();
+                    $('#deleteCategoryModal').modal('hide');
+                }).fail(function () {
+                    console.log("error");
+                }, "json");
+            });
+
+            $('#addCategoryModal').on('click', '#btnSave', function () {
+                data = {
+                    Name : $('#addCategoryModal').find('#name').val()
+                };
+
+                $.post('/Category/AddCategory', { Category: data }, function (returnedData) {
+                    table.ajax.reload();
+                    console.log(returnedData);
+                    $('#addCategoryModal').modal('hide');
+                }).fail(function () {
+                    console.log("error");
+                }, "json");
+            });
+
+
+            // Clean Data after Modal Close
+
+            $('#detailCategoryModal').on('hidden.bs.modal', function (e) {
+                data = [];
+                $('#detailCategoryModal').find('#name').val("");
+            });
+
+            $('#deleteCategoryModal').on('hidden.bs.modal', function (e) {
+                data = [];
+            });
+
+            $('#addCategoryModal').on('hidden.bs.modal', function (e) {
+                data = [];
+                $('#addCategoryModal').find('#name').val("");
+            });
+        });
+
+    </script>
+
+}

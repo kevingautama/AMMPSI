@@ -10,11 +10,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AMMPSI.Controllers
 {
-    public class LocationController : Controller
+    public class CategoryController : Controller
     {
         private readonly AMContext _context;
 
-        public LocationController(AMContext context)
+        public CategoryController(AMContext context)
         {
             _context = context;
         }
@@ -25,7 +25,7 @@ namespace AMMPSI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetLocationTableData()
+        public async Task<IActionResult> GetCategoryTableData()
         {
             try
             {
@@ -56,17 +56,16 @@ namespace AMMPSI.Controllers
 
 
 
-                List<LocationViewModel> locationData = new List<LocationViewModel>();
+                List<CategoryViewModel> categoryData = new List<CategoryViewModel>();
                 // getting all Proposal data 
-                var locationList = await _context.Location.Where(a => a.DeletedDate == null).ToListAsync();
+                var categoryList = await _context.Category.Where(a => a.DeletedDate == null).ToListAsync();
 
-                foreach(var item in locationList)
+                foreach (var item in categoryList)
                 {
-                    locationData.Add(new LocationViewModel
+                    categoryData.Add(new CategoryViewModel
                     {
                         ID = item.ID,
                         Name = item.Name,
-                        Floor = item.Floor,
                         TotalAsset = "Infinity"
                     });
                 }
@@ -74,18 +73,18 @@ namespace AMMPSI.Controllers
                 //Sorting  
                 if (!(string.IsNullOrEmpty(sortColumn) && string.IsNullOrEmpty(sortColumnDirection)))
                 {
-                    locationData = locationData.AsQueryable().OrderBy(sortColumn + " " + sortColumnDirection).ToList();
+                    categoryData = categoryData.AsQueryable().OrderBy(sortColumn + " " + sortColumnDirection).ToList();
                 }
                 //Search  
                 if (!string.IsNullOrEmpty(searchValue))
                 {
-                    locationData = locationData.Where(m => m.Name.Contains(searchValue) || m.Floor.Contains(searchValue)).ToList();
+                    categoryData = categoryData.Where(m => m.Name.Contains(searchValue)).ToList();
                 }
 
                 //total number of rows counts   
-                recordsTotal = locationData.Count();
+                recordsTotal = categoryData.Count();
                 //Paging   
-                var data = locationData.Skip(skip).Take(pageSize).ToList();
+                var data = categoryData.Skip(skip).Take(pageSize).ToList();
                 //Returning Json Data  
                 return Json(new { draw = draw, recordsFiltered = recordsTotal, recordsTotal = recordsTotal, data = data });
 
@@ -97,52 +96,65 @@ namespace AMMPSI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetLocation(int id)
+        public async Task<IActionResult> GetCategory(int id)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var location = await _context.Location.FindAsync(id);
+            var category = await _context.Category.FindAsync(id);
 
-            if (location == null)
+            if (category == null)
             {
                 return NotFound();
             }
 
-            return Ok(location);
+            return Ok(category);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetCategory()
+        {
+            var category = await _context.Category.Where(x => x.DeletedDate == null).ToListAsync();
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(category);
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddLocation(Location location)
+        public async Task<IActionResult> AddCategory(Category category)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            _context.Location.Add(location);
+            _context.Category.Add(category);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetLocation", new { id = location.ID }, location);
+            return CreatedAtAction("GetCategory", new { id = category.ID }, category);
         }
 
         [HttpPost]
-        public async Task<IActionResult> EditLocation(int id, Location location)
+        public async Task<IActionResult> EditCategory(int id, Category category)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (id != location.ID)
+            if (id != category.ID)
             {
                 return BadRequest();
             }
 
-            location.UpdatedDate = DateTime.Now;
-            _context.Entry(location).State = EntityState.Modified;
+            category.UpdatedDate = DateTime.Now;
+            _context.Entry(category).State = EntityState.Modified;
 
             try
             {
@@ -150,7 +162,7 @@ namespace AMMPSI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!LocationExists(id))
+                if (!CategoryExists(id))
                 {
                     return NotFound();
                 }
@@ -164,21 +176,21 @@ namespace AMMPSI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> DeleteLocation(int id)
+        public async Task<IActionResult> DeleteCategory(int id)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var location = _context.Location.SingleOrDefault(m => m.ID == id);
-            if (location == null)
+            var category = _context.Category.SingleOrDefault(m => m.ID == id);
+            if (category == null)
             {
                 return NotFound();
             }
 
-            location.DeletedDate = DateTime.Now;
-            _context.Entry(location).State = EntityState.Modified;
+            category.DeletedDate = DateTime.Now;
+            _context.Entry(category).State = EntityState.Modified;
 
             try
             {
@@ -186,7 +198,7 @@ namespace AMMPSI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!LocationExists(id))
+                if (!CategoryExists(id))
                 {
                     return NotFound();
                 }
@@ -199,9 +211,9 @@ namespace AMMPSI.Controllers
             return NoContent();
         }
 
-        private bool LocationExists(int id)
+        private bool CategoryExists(int id)
         {
-            return _context.Location.Any(e => e.ID == id);
+            return _context.Category.Any(e => e.ID == id);
         }
     }
 }
