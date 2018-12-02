@@ -96,6 +96,24 @@ namespace AMMPSI.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetLocationAutoComplete(string searchText)
+        {
+            var location = await _context.Location.Where(x => x.DeletedDate == null).ToListAsync();
+
+            if (location == null)
+            {
+                return NotFound();
+            }
+
+            if (!String.IsNullOrWhiteSpace(searchText))
+            {
+                location = location.Where(a => a.Name.ToUpper().Contains(searchText.ToUpper())).ToList();
+            }
+
+            return Ok(location);
+        }
+
         [HttpPost]
         public async Task<IActionResult> GetLocation(int id)
         {

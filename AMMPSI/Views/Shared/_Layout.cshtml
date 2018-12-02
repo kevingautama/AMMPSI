@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="~/lib/strdash/css/metisMenu.css">
     <link rel="stylesheet" href="~/lib/strdash/css/owl.carousel.min.css">
     <link rel="stylesheet" href="~/lib/strdash/css/slicknav.min.css">
+    <link href="~/lib/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
     <!-- amchart css -->
     <link rel="stylesheet" href="https://www.amcharts.com/lib/3/plugins/export/export.css" type="text/css" media="all" />
     @RenderSection("DataTableSytleSheets", required: false)
@@ -21,6 +22,7 @@
     <!-- modernizr css -->
     <script src="~/lib/strdash/js/vendor/modernizr-2.8.3.min.js"></script>
     @*<link rel="stylesheet" href="~/css/site.css" />*@
+    @RenderSection("StyleSheets", required: false)
 
 </head>
 <body>
@@ -51,12 +53,21 @@
                                 <a href="@Url.Action("Index","Category")" aria-expanded="true"><i class="ti-location-pin"></i><span>category</span></a>
                             </li>
                             <li>
-
-                            </li>
-                            <li>
                                 <a href="@Url.Action("Index","Location")" aria-expanded="true"><i class="ti-location-pin"></i><span>location</span></a>
                             </li>
-
+                            <li>
+                                <a href="javascript:void(0)" aria-expanded="true">
+                                    <i class="ti-layout-sidebar-left"></i><span>
+                                        transaction
+                                    </span>
+                                </a>
+                                <ul class="collapse">
+                                    <li><a href="#">approval</a></li>
+                                    <li><a href="@Url.Action("MoveAsset","Transaction")">move</a></li>
+                                    <li><a href="#">task</a></li>
+                                    <li><a href="#">history</a></li>
+                                </ul>
+                            </li>
                         </ul>
                     </nav>
                 </div>
@@ -316,6 +327,7 @@
     <!-- offset area end -->
     <!-- jquery latest version -->
     <script src="~/lib/strdash/js/vendor/jquery-2.2.4.min.js"></script>
+    <script src="~/lib/jquery-ui/jquery-ui.js"></script>
     <!-- bootstrap 4 js -->
     <script src="~/lib/strdash/js/popper.min.js"></script>
     <script src="~/lib/strdash/js/bootstrap.min.js"></script>
