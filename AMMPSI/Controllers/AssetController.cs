@@ -123,6 +123,7 @@ namespace AMMPSI.Controllers
                 return BadRequest(ModelState);
             }
 
+            Asset.CreatedDate = DateTime.Now;
             _context.Asset.Add(Asset);
             await _context.SaveChangesAsync();
 

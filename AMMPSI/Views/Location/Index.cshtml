@@ -167,7 +167,11 @@
             });
 
             $(document).on('click', '#btnDetailModal', function () {
-                var id = table.row($(this).closest('tr')).data().ID;
+                var current_row = $(this).closest('tr');
+                if (current_row.hasClass('child')) {
+                    current_row = current_row.prev();
+                }
+                var id = table.row(current_row).data().ID;
                 $.post('/Location/GetLocation', { id: id }, function (returnedData) {
                     $('#detailLocationModal').modal();
                     data = returnedData;
@@ -180,7 +184,11 @@
             });
 
             $(document).on('click', '#btnDeleteModal', function () {
-                var id = table.row($(this).closest('tr')).data().ID;
+                var current_row = $(this).closest('tr');
+                if (current_row.hasClass('child')) {
+                    current_row = current_row.prev();
+                }
+                var id = table.row(current_row).data().ID;
                 $('#deleteLocationModal').modal();
                 data = id;
             });

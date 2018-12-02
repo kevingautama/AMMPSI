@@ -122,6 +122,7 @@ namespace AMMPSI.Controllers
                 return BadRequest(ModelState);
             }
 
+            location.CreatedDate = DateTime.Now;
             _context.Location.Add(location);
             await _context.SaveChangesAsync();
 

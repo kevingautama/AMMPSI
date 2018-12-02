@@ -134,6 +134,7 @@ namespace AMMPSI.Controllers
                 return BadRequest(ModelState);
             }
 
+            category.CreatedDate = DateTime.Now;
             _context.Category.Add(category);
             await _context.SaveChangesAsync();
 

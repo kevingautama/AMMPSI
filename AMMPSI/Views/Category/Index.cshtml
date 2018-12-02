@@ -148,7 +148,11 @@
             });
 
             $(document).on('click', '#btnDetailModal', function () {
-                var id = table.row($(this).closest('tr')).data().ID;
+                var current_row = $(this).closest('tr');
+                if (current_row.hasClass('child')) {
+                    current_row = current_row.prev();
+                }
+                var id = table.row(current_row).data().ID;
                 $.post('/Category/GetCategory', { id: id }, function (returnedData) {
                     $('#detailCategoryModal').modal();
                     data = returnedData;
@@ -159,7 +163,11 @@
             });
 
             $(document).on('click', '#btnDeleteModal', function () {
-                var id = table.row($(this).closest('tr')).data().ID;
+                var current_row = $(this).closest('tr');
+                if (current_row.hasClass('child')) {
+                    current_row = current_row.prev();
+                }
+                var id = table.row(current_row).data().ID;
                 $('#deleteCategoryModal').modal();
                 data = id;
             });

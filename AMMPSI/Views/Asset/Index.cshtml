@@ -52,9 +52,6 @@
                 <div class="form-group">
                     <label class="col-form-label">Category</label>
                     <select class="form-control" id="category">
-                        <option value="1">category 1</option>
-                        <option value="2">category 2</option>
-                        <option value="3">category 3</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -96,9 +93,6 @@
                 <div class="form-group">
                     <label class="col-form-label">Category</label>
                     <select class="form-control" id="category">
-                        <option>category 1</option>
-                        <option>category 2</option>
-                        <option>category 3</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -188,30 +182,49 @@
 
             });
 
-
             // Load Data For Modal
             $(document).on('click', '#btnAddModal', function () {
+                $.get("/Category/GetCategory", function (data) {
+                    $('#addAssetModal').find('#category').empty();
+                    $.each(data, function (index, value) {
+                        $('<option>').val(value.ID).text(value.Name).appendTo($('#addAssetModal').find('#category'));
+                    });
+                });
                 $('#addAssetModal').modal();
             });
 
             $(document).on('click', '#btnDetailModal', function () {
-                var id = table.row($(this).closest('tr')).data().ID;
+                var current_row = $(this).closest('tr');
+                if (current_row.hasClass('child')) {
+                    current_row = current_row.prev();
+                }
+                var id = table.row(current_row).data().ID;
                 $.post('/Asset/GetAsset', { id: id }, function (returnedData) {
-                    $('#detailAssetModal').modal();
+                    $.get("/Category/GetCategory", function (data) {
+                        $('#detailAssetModal').find('#category').empty();
+                        $.each(data, function (index, value) {
+                            $('<option>').val(value.ID).text(value.Name).appendTo($('#detailAssetModal').find('#category'));
+                        });
+                    });
                     data = returnedData;
+                    console.log("trigger");
                     $('#detailAssetModal').find('#name').val(data.Name);
                     $('#detailAssetModal').find('#value').val(data.Value);
-                    console.log(data.Value);
-                    //$('#detailAssetModal').find('#category').val(data.Category);
-                    $('#detailAssetModal').find('#isMoveable').val(data.IsMoveable);
+                    $('#detailAssetModal').find('#category').val(data.CategoryID);
+                    $('#detailAssetModal').find('#isMoveable').val(data.IsMoveable.toString());
                     $('#detailAssetModal').find('#description').val(data.Description);
+                    $('#detailAssetModal').modal();
                 }).fail(function () {
                     console.log("error");
                 },"json");
             });
 
             $(document).on('click', '#btnDeleteModal', function () {
-                var id = table.row($(this).closest('tr')).data().ID;
+                var current_row = $(this).closest('tr');
+                if (current_row.hasClass('child')) {
+                    current_row = current_row.prev();
+                }
+                var id = table.row(current_row).data().ID;
                 $('#deleteAssetModal').modal();
                 data = id;
             });
@@ -220,11 +233,12 @@
             // Add Edit Delete Operation
             $('#detailAssetModal').on('click', '#btnSave', function () {
                 data.Name = $('#detailAssetModal').find('#name').val();
-                data.Value = $('#addAssetModal').find('#value').val();
-                data.CategoryID = 1; //$('#addAssetModal').find('#category').val();
+                data.Value = $('#detailAssetModal').find('#value').val();
+                data.CategoryID = $('#detailAssetModal').find('#category').val()
                 data.IsMoveable = $('#detailAssetModal').find('#isMoveable').val();
                 console.log($('#detailAssetModal').find('#isMoveable').val());
                 data.Description = $('#detailAssetModal').find('#description').val();
+                console.log(data);
                 $.post('/Asset/EditAsset', { id: data.ID, Asset: data }, function (returnedData) {
                     table.ajax.reload();
                     $('#detailAssetModal').modal('hide');
@@ -246,7 +260,7 @@
                 data = {
                     Name: $('#addAssetModal').find('#name').val(),
                     Value: $('#addAssetModal').find('#value').val(),
-                    CategoryID: 1, //$('#addAssetModal').find('#category').val();
+                    CategoryID: $('#addAssetModal').find('#category').val(),
                     IsMoveable: $('#addAssetModal').find('#isMoveable').val(),
                     Description: $('#addAssetModal').find('#description').val()
                 };
