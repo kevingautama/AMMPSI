@@ -54,6 +54,7 @@
                                             <th>ID</th>
                                             <th>Name</th>
                                             <th>Category</th>
+                                            <th>Location</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
@@ -68,6 +69,7 @@
                                             <th>ID</th>
                                             <th>Name</th>
                                             <th>Category</th>
+                                            <th>Location</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
@@ -78,8 +80,48 @@
                     </div>
                 </div>
                 <div id="step-3" class="">
-                    <h2>{{ later Summary}}</h2>
-                    <button id="btnSubmit" class="btn btn-flat btn-success">Submit</button>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Location</th>
+                            <td id="summaryLocation"></td>
+                        </tr>
+                        <tr>
+                            <th>Move Date</th>
+                            <td id="summaryMoveDate"></td>
+                        </tr>
+                        <tr>
+                            <th>Description</th>
+                            <td id="summaryDescription"></td>
+                        </tr>
+                    </table>
+                    <div class="according">
+                        <div class="card">
+                            <div class="card-header">
+                                <a class="card-link collapsed" data-toggle="collapse" href="#assetList" aria-expanded="false">
+                                    Move Asset List
+                                </a>
+                            </div>
+                            <div id="assetList" class="collapse" data-parent="#assetList" style="">
+                                <div class="card-body">
+                                    <div class="data-tables datatable-dark">
+                                        <table id="summaryMoveTable" class="text-center">
+                                            <thead class="text-capitalize">
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Name</th>
+                                                    <th>Category</th>
+                                                    <th>Location</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr/>
+                    <button id="btnSubmit" class="btn btn-success btn-block">Submit</button>
                 </div>
             </div>
         </div>
@@ -102,6 +144,7 @@
         $(document).ready(function () {
             var tempAssetMoveList = [];
             $('#moveAssetWizard').smartWizard();
+
             var assetTable = $("#assetMoveableDataTable").DataTable({
                 "responsive": true,
                 "bAutoWidth": false,
@@ -124,6 +167,7 @@
                     { "data": "ID", "name": "ID", "autoWidth": false },
                     { "data": "Name", "name": "Name", "autoWidth": false },
                     { "data": "CategoryName", "name": "Category", "autoWidth": false },
+                    { "data": "CurrentLocation", "name": "Location" , "autoWidth": false },
                     {
                         "render": function (data, type, full, meta) {
 
@@ -148,6 +192,7 @@
                     { "name": "ID", "autoWidth": false },
                     { "name": "Name", "autoWidth": false },
                     { "name": "Category", "autoWidth": false },
+                    { "name": "CurrentLocation", "autoWidth": false},
                     {
                         "render": function (data, type, full, meta) {
 
@@ -156,6 +201,45 @@
                         }
                     }
                 ]
+            });
+
+            var summaryAssetTable = $("#summaryMoveTable").DataTable({
+                "responsive": true,
+                "bAutoWidth": false,
+                "columnDefs":
+                    [{
+                        "targets": [0],
+                        "visible": false,
+                        "searchable": false
+                    }],
+                "columns": [
+                    { "name": "ID", "autoWidth": false },
+                    { "name": "Name", "autoWidth": false },
+                    { "name": "Category", "autoWidth": false },
+                    { "name": "CurrentLocation", "autoWidth": false }
+                    
+                ]
+            });
+
+            $("#moveAssetWizard").on("showStep", function (e, anchorObject, stepNumber, stepDirection) {
+                // stepnumber using zero-based index
+                if (stepNumber === 2) {
+                    $("#summaryMoveDate").html($("#moveDate").val());
+                    $("#summaryLocation").html($("#location").val());
+                    $("#summaryDescription").html($("#description").val());
+
+                    summaryAssetTable.clear();
+                    $(tempAssetTable.rows().data()).each(function (i, data) {
+                        summaryAssetTable.row.add([
+                            data[0],
+                            data[1],
+                            data[2],
+                            data[3]
+                        ]);
+
+                    });
+                    summaryAssetTable.draw();
+                }
             });
 
             $("#location").autocomplete({
@@ -215,9 +299,9 @@
                 tempAssetTable.row.add([
                     data.ID,
                     data.Name,
-                    data.CategoryName
+                    data.CategoryName,
+                    data.CurrentLocation
                 ]).draw();
-
             });
 
             $(document).on('click', '#btnRemove', function () {

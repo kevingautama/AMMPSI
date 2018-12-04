@@ -1,0 +1,230 @@
+﻿@{
+    ViewData["Title"] = "Transaction";
+    ViewData["BreadCrumb"] = "Transaction";
+}
+@section DataTableSytleSheets{
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.18/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.jqueryui.min.css">
+}
+
+<div class="row">
+    <!-- Primary table start -->
+    <div class="col-12 mt-5">
+        <div class="card">
+            <div class="card-body">
+                <div class="data-tables datatable-primary">
+                    <table id="moveDataTable" class="text-center">
+                        <thead class="text-capitalize">
+                            <tr>
+                                <th>ID</th>
+                                <th>Move Date</th>
+                                <th>Total Asset</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Primary table end -->
+</div>
+
+<div class="modal fade" id="detailMoveModal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detail</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Location</th>
+                        <td id="location"></td>
+                    </tr>
+                    <tr>
+                        <th>Move Date</th>
+                        <td id="moveDate"></td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td id="description"></td>
+                    </tr>
+                    <tr>
+                        <th>Status</th>
+                        <td id="status"></td>
+                    </tr>
+                    <tr>
+                        <th>Approved By</th>
+                        <td id="approvedBy"></td>
+                    </tr>
+                </table>
+                <div class="according">
+                    <div class="card">
+                        <div class="card-header">
+                            <a class="card-link collapsed" data-toggle="collapse" href="#assetList" aria-expanded="false">
+                                Move Asset List
+                            </a>
+                        </div>
+                        <div id="assetList" class="collapse" data-parent="#assetList" style="">
+                            <div class="card-body">
+                                <div class="data-tables datatable-dark">
+                                    <table id="detailMoveAssetTable" class="text-center">
+                                        <thead class="text-capitalize">
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Name</th>
+                                                <th>Category</th>
+                                                <th>Location</th>
+                                                <th>Is Moved</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnSave" class="btn btn-success">Accept</button><button type="button" id="btnSave" class="btn btn-danger">Reject</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteMoveModal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmation Message</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p> Are you sure to delete this Category? This operation is ireverssible.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn">Cancel</button>
+                <button type="button" id="btnDelete" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section DataTableScripts{
+    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+    <script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.3/js/responsive.bootstrap.min.js"></script>
+}
+
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            var data;
+            var table = $("#moveDataTable").DataTable({
+                "responsive": true,
+                "processing": true, // for show progress bar
+                "serverSide": true, // for process server side
+                "filter": true, // this is for disable filter (search box)
+                "orderMulti": false, // for disable multiple column at once
+                "ajax": {
+                    "url": "/Transaction/GetMoveTableData",
+                    "type": "POST",
+                    "datatype": "json"
+                },
+                "order": [[1, 'desc']],
+                "columnDefs":
+                    [{
+                        "targets": [0],
+                        "visible": false,
+                        "searchable": false
+                    }],
+                "columns": [
+                    { "data": "ID", "name": "ID", "autoWidth": true },
+                    { "data": "MoveDate", "name": "Move Date", "autoWidth": true },
+                    { "data": "TotalAsset", "name": "Total Asset", "autoWidth": true },
+                    { "data": "Status", "name": "Status", "autoWidth": true },
+                    {
+                        "render": function (data, type, full, meta) {
+                            var returnStr = '<button class="btn btn-sm btn-success" id="btnDetailModal"><em class="fa fa-eye" style="color:white"></em></button>&nbsp;' +
+                                '<button class="btn btn-sm btn-danger" id="btnDeleteModal"><em class="fa fa-trash-o" style="color:white"></em></button>&nbsp;';
+                            return returnStr;
+                        }
+                    }
+                ]
+            });
+
+            var detailAssetTable = $("#detailMoveAssetTable").DataTable({
+                "responsive": true,
+                "bAutoWidth": false,
+                "columnDefs":
+                    [{
+                        "targets": [0],
+                        "visible": false,
+                        "searchable": false
+                    }],
+                "columns": [
+                    { "name": "ID", "autoWidth": false },
+                    { "name": "Name", "autoWidth": false },
+                    { "name": "Category", "autoWidth": false },
+                    { "name": "CurrentLocation", "autoWidth": false },
+                    { "name": "Is Moved", "autoWidth": false }
+
+                ]
+            });
+
+            $(document).on('click', '#btnDetailModal', function () {
+                var current_row = $(this).closest('tr');
+                if (current_row.hasClass('child')) {
+                    current_row = current_row.prev();
+                }
+                var id = table.row(current_row).data().ID;
+                $.post('/Transaction/GetMove', { id: id }, function (returnedData) {
+                    console.log(returnedData);
+                    $("#detailMoveModal").find("#location").html(returnedData.LocationName);
+                    $("#detailMoveModal").find("#moveDate").html(returnedData.MoveDate);
+                    $("#detailMoveModal").find("#description").html(returnedData.Description);
+                    $("#detailMoveModal").find("#status").html(returnedData.Status);
+                    $("#detailMoveModal").find("#approvedBy").html(returnedData.ApprovedBy);
+                    detailAssetTable.clear();
+                    $(returnedData.MoveAssetList).each(function (i, data) {
+                        detailAssetTable.row.add([
+                            data.ID,
+                            data.Name,
+                            data.CategoryName,
+                            data.CurrentLocation,
+                            data.IsMoved
+                        ]);
+
+                    });
+                    detailAssetTable.draw();
+                    $("#detailMoveModal").modal();
+
+                }).fail(function () {
+                    console.log("error");
+                }, "json");
+            });
+
+            $(document).on('click', '#btnDeleteModal', function () {
+                var current_row = $(this).closest('tr');
+                if (current_row.hasClass('child')) {
+                    current_row = current_row.prev();
+                }
+                var id = table.row(current_row).data().ID;
+                $('#deleteMoveModal').modal();
+                data = id;
+            });
+
+        });
+
+    </script>
+
+}
