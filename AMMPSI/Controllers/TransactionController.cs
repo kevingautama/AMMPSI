@@ -29,6 +29,11 @@ namespace AMMPSI.Controllers
             return View();
         }
 
+        public IActionResult MoveTask()
+        {
+            return View();
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddMoveAssetRequest(MoveAssetViewModel moveRequest)
         {
@@ -212,6 +217,75 @@ namespace AMMPSI.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> GetTaskTableData()
+        {
+            try
+            {
+                var draw = HttpContext.Request.Form["draw"].FirstOrDefault();
+
+                // Skip number of Rows count  
+                var start = Request.Form["start"].FirstOrDefault();
+
+                // Paging Length 10,20  
+                var length = Request.Form["length"].FirstOrDefault();
+
+                // Sort Column Name  
+                var sortColumn = Request.Form["columns[" + Request.Form["order[0][column]"].FirstOrDefault() + "][data]"].FirstOrDefault();
+
+                // Sort Column Direction (asc, desc)  
+                var sortColumnDirection = Request.Form["order[0][dir]"].FirstOrDefault();
+
+                // Search Value from (Search box)  
+                var searchValue = Request.Form["search[value]"].FirstOrDefault();
+
+                //Paging Size (10, 20, 50,100)  
+                int pageSize = length != null ? Convert.ToInt32(length) : 0;
+
+                int skip = start != null ? Convert.ToInt32(start) : 0;
+
+                int recordsTotal = 0;
+
+                List<MoveViewModel> moveData = new List<MoveViewModel>();
+                var moveList = await _context.Movement.Where(a => a.Status == "Accept" && a.DeletedDate == null).ToListAsync();
+
+                foreach (var item in moveList)
+                {
+                    var moveAssetList = await _context.MovementItem.Where(a => a.MovementID == item.ID && a.DeletedDate == null).ToListAsync();
+                    moveData.Add(new MoveViewModel
+                    {
+                        ID = item.ID,
+                        MoveDate = item.MovementDate.ToShortDateString(),
+                        TotalAsset = moveAssetList.Any() ? moveAssetList.Count.ToString() : "0",
+                        Status = item.Status
+                    });
+                }
+
+                //Sorting  
+                if (!(string.IsNullOrEmpty(sortColumn) && string.IsNullOrEmpty(sortColumnDirection)))
+                {
+                    moveData = moveData.AsQueryable().OrderBy(sortColumn + " " + sortColumnDirection).ToList();
+                }
+                //Search  
+                if (!string.IsNullOrEmpty(searchValue))
+                {
+                    moveData = moveData.Where(m => m.MovementDate.ToShortDateString().Contains(searchValue) || m.TotalAsset.Contains(searchValue) || m.Status.Contains(searchValue)).ToList();
+                }
+
+                //total number of rows counts   
+                recordsTotal = moveData.Count();
+                //Paging   
+                var data = moveData.Skip(skip).Take(pageSize).ToList();
+                //Returning Json Data  
+                return Json(new { draw = draw, recordsFiltered = recordsTotal, recordsTotal = recordsTotal, data = data });
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        [HttpPost]
         public async Task<IActionResult> GetMove(int id)
         {
             if (!ModelState.IsValid)
@@ -227,7 +301,7 @@ namespace AMMPSI.Controllers
             }
 
             MoveViewModel data = new MoveViewModel();
-
+            data.ID = move.ID;
             data.MoveDate = move.MovementDate.ToShortDateString();
             data.Status = move.Status;
             var location = await _context.Location.FindAsync(move.LocationID);
@@ -259,6 +333,72 @@ namespace AMMPSI.Controllers
             }
 
             return Ok(data);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AcceptMove(int id)
+        {
+            var move = await _context.Movement.FindAsync(id);
+
+            if (move == null)
+            {
+                return NotFound();
+            }
+
+            if (await ChangeMoveStatus(move, "Accept"))
+            {
+                return NoContent();
+            }
+
+            return NotFound();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RejectMove(int id)
+        {
+            var move = await _context.Movement.FindAsync(id);
+
+            if (move == null)
+            {
+                return NotFound();
+            }
+
+            if (await ChangeMoveStatus(move, "Reject"))
+            {
+                return NoContent();
+            }
+
+            return NotFound();
+        }
+
+        public async Task<bool> ChangeMoveStatus(Movement move,string status)
+        {
+            move.UpdatedDate = DateTime.Now;
+            move.Status = status;
+            _context.Entry(move).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!MoveExists(move.ID))
+                {
+                    return false;
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return true;
+        }
+
+        private bool MoveExists(int id)
+        {
+            return _context.Movement.Any(e => e.ID == id);
         }
     }
 }
