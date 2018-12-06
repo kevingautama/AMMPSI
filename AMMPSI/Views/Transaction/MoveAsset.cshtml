@@ -4,10 +4,10 @@
 }
 
 @section DataTableSytleSheets{
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.18/css/dataTables.bootstrap4.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.jqueryui.min.css">
+    <link href="~/lib/datatable/css/jquery.dataTables.css" rel="stylesheet" />
+    <link href="~/lib/datatable/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+    <link href="~/lib/datatable/css/responsive.bootstrap.min.css" rel="stylesheet" />
+    <link href="~/lib/datatable/css/responsive.jqueryui.min.css" rel="stylesheet" />
 }
 
 @section StyleSheets{
@@ -37,7 +37,7 @@
                         <label class="col-form-label">Move Date</label>
                         <input class="form-control" type="date" id="moveDate">
                     </div>
-                    
+
                     <div class="form-group">
                         <label class="col-form-label">Description</label>
                         <textarea class="form-control" rows="5" id="description"></textarea>
@@ -120,7 +120,7 @@
                             </div>
                         </div>
                     </div>
-                    <hr/>
+                    <hr />
                     <button id="btnSubmit" class="btn btn-success btn-block">Submit</button>
                 </div>
             </div>
@@ -130,17 +130,16 @@
 </div>
 
 @section DataTableScripts{
-    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
-    <script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap4.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.2.3/js/responsive.bootstrap.min.js"></script>
+    <script src="~/lib/datatable/js/jquery.dataTables.min.js"></script>
+    <script src="~/lib/datatable/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/lib/datatable/js/dataTables.responsive.min.js"></script>
+    <script src="~/lib/datatable/js/responsive.bootstrap.min.js"></script>
 }
 
 @section Scripts{
     <script src="~/lib/smart-wizard/dist/js/jquery.smartWizard.min.js"></script>
     <script type="text/javascript">
-        
+
         $(document).ready(function () {
             var tempAssetMoveList = [];
             $('#moveAssetWizard').smartWizard();
@@ -167,7 +166,7 @@
                     { "data": "ID", "name": "ID", "autoWidth": false },
                     { "data": "Name", "name": "Name", "autoWidth": false },
                     { "data": "CategoryName", "name": "Category", "autoWidth": false },
-                    { "data": "CurrentLocation", "name": "Location" , "autoWidth": false },
+                    { "data": "CurrentLocation", "name": "Location", "autoWidth": false },
                     {
                         "render": function (data, type, full, meta) {
 
@@ -192,7 +191,7 @@
                     { "name": "ID", "autoWidth": false },
                     { "name": "Name", "autoWidth": false },
                     { "name": "Category", "autoWidth": false },
-                    { "name": "CurrentLocation", "autoWidth": false},
+                    { "name": "CurrentLocation", "autoWidth": false },
                     {
                         "render": function (data, type, full, meta) {
 
@@ -217,7 +216,7 @@
                     { "name": "Name", "autoWidth": false },
                     { "name": "Category", "autoWidth": false },
                     { "name": "CurrentLocation", "autoWidth": false }
-                    
+
                 ]
             });
 
@@ -247,7 +246,7 @@
                     $.ajax({
                         url: '/Location/GetLocationAutoComplete',
                         data: {
-                            "searchText" : request.term
+                            "searchText": request.term
                         },
                         type: 'GET',
                         cache: false,
@@ -266,7 +265,7 @@
                     });
                 },
                 minLength: 1,
-                focus: function (event,ui) {
+                focus: function (event, ui) {
                     event.preventDefault();
                     $("#location").val(ui.item.label);
                 },
@@ -329,7 +328,7 @@
                     ListAssetID: listAssetID
                 };
 
-                $.post('/Transaction/AddMoveAssetRequest', { MoveRequest : data }, function (returnedData) {
+                $.post('/Transaction/AddMoveAssetRequest', { MoveRequest: data }, function (returnedData) {
                     table.ajax.reload();
                     console.log(returnedData);
                     $('#addCategoryModal').modal('hide');

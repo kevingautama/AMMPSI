@@ -3,10 +3,10 @@
     ViewData["BreadCrumb"] = "Category";
 }
 @section DataTableSytleSheets{
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.18/css/dataTables.bootstrap4.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.jqueryui.min.css">
+    <link href="~/lib/datatable/css/jquery.dataTables.css" rel="stylesheet" />
+    <link href="~/lib/datatable/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+    <link href="~/lib/datatable/css/responsive.bootstrap.min.css" rel="stylesheet" />
+    <link href="~/lib/datatable/css/responsive.jqueryui.min.css" rel="stylesheet" />
 }
 
 <div class="row">
@@ -96,11 +96,10 @@
 </div>
 
 @section DataTableScripts{
-    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
-    <script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap4.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.2.3/js/responsive.bootstrap.min.js"></script>
+    <script src="~/lib/datatable/js/jquery.dataTables.min.js"></script>
+    <script src="~/lib/datatable/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/lib/datatable/js/dataTables.responsive.min.js"></script>
+    <script src="~/lib/datatable/js/responsive.bootstrap.min.js"></script>
 }
 
 @section Scripts{
@@ -159,7 +158,7 @@
                     $('#detailCategoryModal').find('#name').val(data.Name);
                 }).fail(function () {
                     console.log("error");
-                },"json");
+                }, "json");
             });
 
             $(document).on('click', '#btnDeleteModal', function () {
@@ -185,7 +184,7 @@
             });
 
             $('#deleteCategoryModal').on('click', '#btnDelete', function () {
-                $.post('/Category/DeleteCategory', { id: data}, function (returnedData) {
+                $.post('/Category/DeleteCategory', { id: data }, function (returnedData) {
                     table.ajax.reload();
                     $('#deleteCategoryModal').modal('hide');
                 }).fail(function () {
@@ -195,7 +194,7 @@
 
             $('#addCategoryModal').on('click', '#btnSave', function () {
                 data = {
-                    Name : $('#addCategoryModal').find('#name').val()
+                    Name: $('#addCategoryModal').find('#name').val()
                 };
 
                 $.post('/Category/AddCategory', { Category: data }, function (returnedData) {

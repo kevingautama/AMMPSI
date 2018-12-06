@@ -3,10 +3,10 @@
     ViewData["BreadCrumb"] = "Transaction";
 }
 @section DataTableSytleSheets{
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.18/css/dataTables.bootstrap4.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.jqueryui.min.css">
+    <link href="~/lib/datatable/css/jquery.dataTables.css" rel="stylesheet" />
+    <link href="~/lib/datatable/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+    <link href="~/lib/datatable/css/responsive.bootstrap.min.css" rel="stylesheet" />
+    <link href="~/lib/datatable/css/responsive.jqueryui.min.css" rel="stylesheet" />
 }
 
 <div class="row">
@@ -42,7 +42,7 @@
                 <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <div class="modal-body">
-                <input type="hidden" id="locationId" />
+                <input type="hidden" id="moveId" />
                 <table class="table table-bordered">
                     <tr>
                         <th>Location</th>
@@ -119,11 +119,10 @@
 </div>
 
 @section DataTableScripts{
-    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
-    <script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap4.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.2.3/js/responsive.bootstrap.min.js"></script>
+    <script src="~/lib/datatable/js/jquery.dataTables.min.js"></script>
+    <script src="~/lib/datatable/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/lib/datatable/js/dataTables.responsive.min.js"></script>
+    <script src="~/lib/datatable/js/responsive.bootstrap.min.js"></script>
 }
 
 @section Scripts{
@@ -189,7 +188,7 @@
                 }
                 var id = table.row(current_row).data().ID;
                 $.post('/Transaction/GetMove', { id: id }, function (returnedData) {
-                    $("#detailMoveModal").find("#locationId").val(returnedData.ID);
+                    $("#detailMoveModal").find("#moveId").val(returnedData.ID);
                     $("#detailMoveModal").find("#location").html(returnedData.LocationName);
                     $("#detailMoveModal").find("#moveDate").html(returnedData.MoveDate);
                     $("#detailMoveModal").find("#description").html(returnedData.Description);
@@ -225,7 +224,7 @@
             });
 
             $(document).on('click', '#btnAccept', function () {
-                var id = $("#detailMoveModal").find("#locationId").val();
+                var id = $("#detailMoveModal").find("#moveId").val();
                 $.post('/Transaction/AcceptMove', { id: id }, function (returnedData) {
                     $("#detailMoveModal").modal('hide');
                     table.ajax.reload();
@@ -235,7 +234,7 @@
             });
 
             $(document).on('click', '#btnReject', function () {
-                var id = $("#detailMoveModal").find("#locationId").val();
+                var id = $("#detailMoveModal").find("#moveId").val();
                 $.post('/Transaction/RejectMove', { id: id }, function (returnedData) {
                     $("#detailMoveModal").modal('hide');
                     table.ajax.reload();

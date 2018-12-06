@@ -34,6 +34,11 @@ namespace AMMPSI.Controllers
             return View();
         }
 
+        public IActionResult MoveLog()
+        {
+            return View();
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddMoveAssetRequest(MoveAssetViewModel moveRequest)
         {
@@ -286,6 +291,66 @@ namespace AMMPSI.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> GetMovementLogTableData()
+        {
+            try
+            {
+                var draw = HttpContext.Request.Form["draw"].FirstOrDefault();
+
+                // Skip number of Rows count  
+                var start = Request.Form["start"].FirstOrDefault();
+
+                // Paging Length 10,20  
+                var length = Request.Form["length"].FirstOrDefault();
+
+                // Sort Column Name  
+                var sortColumn = Request.Form["columns[" + Request.Form["order[0][column]"].FirstOrDefault() + "][data]"].FirstOrDefault();
+
+                // Sort Column Direction (asc, desc)  
+                var sortColumnDirection = Request.Form["order[0][dir]"].FirstOrDefault();
+
+                // Search Value from (Search box)  
+                var searchValue = Request.Form["search[value]"].FirstOrDefault();
+
+                //Paging Size (10, 20, 50,100)  
+                int pageSize = length != null ? Convert.ToInt32(length) : 0;
+
+                int skip = start != null ? Convert.ToInt32(start) : 0;
+
+                int recordsTotal = 0;
+
+                List<MovementLogViewModel> movementLogData = new List<MovementLogViewModel>();
+                var movementLogList = await _context.MovementLog.Where(a => a.DeletedDate == null).OrderBy(a => a.CreatedDate).ToListAsync();
+
+                var locationList = await _context.Location.Where(a => a.DeletedDate == null).ToListAsync();
+
+                foreach (var item in movementLogList)
+                {
+                    var asset = await _context.Asset.FindAsync(item.AssetID);
+                    movementLogData.Add(new MovementLogViewModel
+                    {
+                        DateTime = item.CreatedDate,
+                        AssetName = asset.Name,
+                        LocationName = locationList.Where(a => a.ID == item.LocationID).FirstOrDefault().Name,
+                        MovedBy = item.MovedBy
+                    });
+                }
+
+                //total number of rows counts   
+                recordsTotal = movementLogData.Count();
+                //Paging   
+                var data = movementLogData.Skip(skip).Take(pageSize).ToList();
+                //Returning Json Data  
+                return Json(new { draw = draw, recordsFiltered = recordsTotal, recordsTotal = recordsTotal, data = data });
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        [HttpPost]
         public async Task<IActionResult> GetMove(int id)
         {
             if (!ModelState.IsValid)
@@ -323,6 +388,7 @@ namespace AMMPSI.Controllers
                     var category = await _context.Category.FindAsync(asset.CategoryID);
                     data.MoveAssetList.Add(new MoveItemViewModel
                     {
+                        ID = item.ID,
                         Name = asset.Name,
                         CategoryName = category.Name,
                         CurrentLocation = "room1",
@@ -338,6 +404,11 @@ namespace AMMPSI.Controllers
         [HttpPost]
         public async Task<IActionResult> AcceptMove(int id)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var move = await _context.Movement.FindAsync(id);
 
             if (move == null)
@@ -356,6 +427,11 @@ namespace AMMPSI.Controllers
         [HttpPost]
         public async Task<IActionResult> RejectMove(int id)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var move = await _context.Movement.FindAsync(id);
 
             if (move == null)
@@ -369,6 +445,116 @@ namespace AMMPSI.Controllers
             }
 
             return NotFound();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> MoveSingleAsset(int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var movementItem = await _context.MovementItem.FindAsync(id);
+
+            if (movementItem == null)
+            {
+                return NotFound();
+            }
+
+            var movement = await _context.Movement.FindAsync(movementItem.MovementID);
+
+            if(movement == null)
+            {
+                return NotFound();
+            }
+
+            if (await MoveItem(movementItem, movement.LocationID))
+            {
+                IsMoveDone(movement);
+                return NoContent();
+            }
+            
+            return NotFound();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> MoveAllAsset(int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var movement = await _context.Movement.FindAsync(id);
+
+            if (movement == null)
+            {
+                return NotFound();
+            }
+
+            var movementItem = await _context.MovementItem.Where(a => a.DeletedDate == null && a.MovementID == movement.ID && a.IsMoved == false).ToListAsync();
+
+            if (movementItem == null)
+            {
+                return NotFound();
+            }
+
+            bool flag = true;
+
+            foreach(var item in movementItem)
+            {
+                if (!await MoveItem(item, movement.LocationID))
+                {
+                    flag = false;
+                    break;
+                    
+                }
+            }
+
+            if (flag)
+            {
+                IsMoveDone(movement);
+                return NoContent();
+            }
+
+            return NotFound();
+        }
+
+        public async Task<bool> MoveItem(MovementItem item,int locationId)
+        {
+            item.UpdatedDate = DateTime.Now;
+            item.IsMoved = true;
+            _context.Entry(item).State = EntityState.Modified;
+
+            MovementLog log = new MovementLog
+            {
+                AssetID = item.AssetID,
+                LocationID = locationId,
+                MovedBy = "",
+                CreatedBy = "",
+                CreatedDate = DateTime.Now
+            };
+
+            _context.MovementLog.Add(log);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!MovementItemExists(item.ID))
+                {
+                    return false;
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return true;
         }
 
         public async Task<bool> ChangeMoveStatus(Movement move,string status)
@@ -396,9 +582,37 @@ namespace AMMPSI.Controllers
             return true;
         }
 
+        public async void IsMoveDone(Movement move)
+        {
+            var movementItem = await _context.MovementItem.Where(a => a.DeletedDate == null && a.MovementID == move.ID).ToListAsync();
+
+            bool flag = true;
+
+            foreach(var item in movementItem)
+            {
+                if(item.IsMoved == false)
+                {
+                    flag = false;
+                }
+            }
+
+            if (flag)
+            {
+                move.Status = "Done";
+                _context.Entry(move).State = EntityState.Modified;
+
+                await _context.SaveChangesAsync();
+            }
+        }
+
         private bool MoveExists(int id)
         {
             return _context.Movement.Any(e => e.ID == id);
+        }
+
+        private bool MovementItemExists(int id)
+        {
+            return _context.MovementItem.Any(e => e.ID == id);
         }
     }
 }

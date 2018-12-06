@@ -3,10 +3,10 @@
     ViewData["BreadCrumb"] = "Asset";
 }
 @section DataTableSytleSheets{
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.18/css/dataTables.bootstrap4.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.jqueryui.min.css">
+    <link href="~/lib/datatable/css/jquery.dataTables.css" rel="stylesheet" />
+    <link href="~/lib/datatable/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+    <link href="~/lib/datatable/css/responsive.bootstrap.min.css" rel="stylesheet" />
+    <link href="~/lib/datatable/css/responsive.jqueryui.min.css" rel="stylesheet" />
 }
 
 <div class="row">
@@ -51,8 +51,7 @@
                 </div>
                 <div class="form-group">
                     <label class="col-form-label">Category</label>
-                    <select class="form-control" id="category">
-                    </select>
+                    <select class="form-control" id="category"></select>
                 </div>
                 <div class="form-group">
                     <label class="col-form-label">Value</label>
@@ -92,8 +91,7 @@
                 </div>
                 <div class="form-group">
                     <label class="col-form-label">Category</label>
-                    <select class="form-control" id="category">
-                    </select>
+                    <select class="form-control" id="category"></select>
                 </div>
                 <div class="form-group">
                     <label class="col-form-label">Value</label>
@@ -137,11 +135,10 @@
 </div>
 
 @section DataTableScripts{
-    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
-    <script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap4.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.2.3/js/responsive.bootstrap.min.js"></script>
+    <script src="~/lib/datatable/js/jquery.dataTables.min.js"></script>
+    <script src="~/lib/datatable/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/lib/datatable/js/dataTables.responsive.min.js"></script>
+    <script src="~/lib/datatable/js/responsive.bootstrap.min.js"></script>
 }
 
 @section Scripts{
@@ -169,7 +166,7 @@
                     { "data": "ID", "name": "ID", "autoWidth": true },
                     { "data": "Name", "name": "Name", "autoWidth": true },
                     { "data": "CategoryName", "name": "Category", "autoWidth": true },
-                    { "data": "CurrentLocation" , "name": "Location", "autoWidth": true},
+                    { "data": "CurrentLocation", "name": "Location", "autoWidth": true },
                     {
                         "render": function (data, type, full, meta) {
                             var returnStr = '<button class="btn btn-sm btn-success" id="btnDetailModal"><em class="fa fa-eye" style="color:white"></em></button>&nbsp;' +
@@ -216,7 +213,7 @@
                     $('#detailAssetModal').modal();
                 }).fail(function () {
                     console.log("error");
-                },"json");
+                }, "json");
             });
 
             $(document).on('click', '#btnDeleteModal', function () {
@@ -248,7 +245,7 @@
             });
 
             $('#deleteAssetModal').on('click', '#btnDelete', function () {
-                $.post('/Asset/DeleteAsset', { id: data}, function (returnedData) {
+                $.post('/Asset/DeleteAsset', { id: data }, function (returnedData) {
                     table.ajax.reload();
                     $('#deleteAssetModal').modal('hide');
                 }).fail(function () {

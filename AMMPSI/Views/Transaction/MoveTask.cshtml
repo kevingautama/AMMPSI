@@ -3,10 +3,10 @@
     ViewData["BreadCrumb"] = "Transaction";
 }
 @section DataTableSytleSheets{
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.18/css/dataTables.bootstrap4.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.jqueryui.min.css">
+    <link href="~/lib/datatable/css/jquery.dataTables.css" rel="stylesheet" />
+    <link href="~/lib/datatable/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+    <link href="~/lib/datatable/css/responsive.bootstrap.min.css" rel="stylesheet" />
+    <link href="~/lib/datatable/css/responsive.jqueryui.min.css" rel="stylesheet" />
 }
 
 <div class="row">
@@ -35,14 +35,14 @@
 </div>
 
 <div class="modal fade" id="detailMoveModal">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Detail</h5>
                 <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <div class="modal-body">
-                <input type="hidden" id="locationId" />
+                <input type="hidden" id="moveId" />
                 <table class="table table-bordered">
                     <tr>
                         <th>Location</th>
@@ -83,6 +83,7 @@
                                                 <th>Category</th>
                                                 <th>Location</th>
                                                 <th>Is Moved</th>
+                                                <th>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody></tbody>
@@ -94,36 +95,17 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" id="btnAccept" class="btn btn-success">Accept</button><button type="button" id="btnReject" class="btn btn-danger">Reject</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="deleteMoveModal">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirmation Message</h5>
-                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-            </div>
-            <div class="modal-body">
-                <p> Are you sure to delete this Category? This operation is ireverssible.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" data-dismiss="modal" class="btn">Cancel</button>
-                <button type="button" id="btnDelete" class="btn btn-danger">Delete</button>
+                <button type="button" id="btnMoveAll" class="btn btn-success">MoveAll</button>
             </div>
         </div>
     </div>
 </div>
 
 @section DataTableScripts{
-    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
-    <script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap4.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.2.3/js/responsive.bootstrap.min.js"></script>
+    <script src="~/lib/datatable/js/jquery.dataTables.min.js"></script>
+    <script src="~/lib/datatable/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/lib/datatable/js/dataTables.responsive.min.js"></script>
+    <script src="~/lib/datatable/js/responsive.bootstrap.min.js"></script>
 }
 
 @section Scripts{
@@ -155,8 +137,7 @@
                     { "data": "Status", "name": "Status", "autoWidth": true },
                     {
                         "render": function (data, type, full, meta) {
-                            var returnStr = '<button class="btn btn-sm btn-success" id="btnDetailModal"><em class="fa fa-eye" style="color:white"></em></button>&nbsp;' +
-                                '<button class="btn btn-sm btn-danger" id="btnDeleteModal"><em class="fa fa-trash-o" style="color:white"></em></button>&nbsp;';
+                            var returnStr = '<button class="btn btn-sm btn-success" id="btnDetailModal"><em class="fa fa-eye" style="color:white"></em></button>&nbsp;';
                             return returnStr;
                         }
                     }
@@ -177,7 +158,13 @@
                     { "name": "Name", "autoWidth": false },
                     { "name": "Category", "autoWidth": false },
                     { "name": "CurrentLocation", "autoWidth": false },
-                    { "name": "Is Moved", "autoWidth": false }
+                    { "name": "Is Moved", "autoWidth": false },
+                    {
+                        "render": function (data, type, full, meta) {
+                            var returnStr = '<button class="btn btn-sm btn-success" id="btnMove"><em class="fa fa-eye" style="color:white"></em></button>&nbsp;';
+                            return returnStr;
+                        }
+                    }
 
                 ]
             });
@@ -189,7 +176,7 @@
                 }
                 var id = table.row(current_row).data().ID;
                 $.post('/Transaction/GetMove', { id: id }, function (returnedData) {
-                    $("#detailMoveModal").find("#locationId").val(returnedData.ID);
+                    $("#detailMoveModal").find("#moveId").val(returnedData.ID);
                     $("#detailMoveModal").find("#location").html(returnedData.LocationName);
                     $("#detailMoveModal").find("#moveDate").html(returnedData.MoveDate);
                     $("#detailMoveModal").find("#description").html(returnedData.Description);
@@ -214,14 +201,28 @@
                 }, "json");
             });
 
-            $(document).on('click', '#btnDeleteModal', function () {
+            $(document).on('click', '#btnMoveAll', function () {
+                var id = $("#detailMoveModal").find("#moveId").val();
+                $.post('/Transaction/MoveAllAsset', { id: id }, function (returnedData) {
+                    console.log('done');
+
+                }).fail(function () {
+                    console.log("error");
+                }, "json");
+            });
+
+            $(document).on('click', '#btnMove', function () {
                 var current_row = $(this).closest('tr');
                 if (current_row.hasClass('child')) {
                     current_row = current_row.prev();
                 }
-                var id = table.row(current_row).data().ID;
-                $('#deleteMoveModal').modal();
-                data = id;
+                var id = detailAssetTable.row(current_row).data()[0];
+                $.post('/Transaction/MoveSingleAsset', { id: id }, function (returnedData) {
+                    console.log('done');
+
+                }).fail(function () {
+                    console.log("error");
+                }, "json");
             });
         });
 
