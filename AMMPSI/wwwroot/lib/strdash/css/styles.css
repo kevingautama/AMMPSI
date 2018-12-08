@@ -891,7 +891,8 @@ ul.breadcrumbs {
 }
 
 #verview-shart-license-text,
-#coin_distribution-license-text {
+#
+-license-text {
     display: none;
 }
 
