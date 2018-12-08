@@ -39,20 +39,22 @@
 <div class="modal fade" id="addCategoryModal">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add Category</h5>
-                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="col-form-label">Name</label>
-                    <input class="form-control" type="text" id="name">
+            <form id="addCategoryForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" data-dismiss="modal" class="btn">Cancel</button>
-                <button type="button" id="btnSave" class="btn btn-success">Save changes</button>
-            </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="col-form-label">Name</label>
+                        <input class="form-control" type="text" id="name" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" data-dismiss="modal" class="btn">Cancel</button>
+                    <button type="button" id="btnSave" class="btn btn-success">Save changes</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -60,19 +62,21 @@
 <div class="modal fade" id="detailCategoryModal">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Detail</h5>
-                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="col-form-label">Name</label>
-                    <input class="form-control" type="text" id="name">
+            <form id="detailCategoryForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detail</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" id="btnSave" class="btn btn-primary">Save changes</button>
-            </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="col-form-label">Name</label>
+                        <input class="form-control" type="text" id="name" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="btnSave" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -103,8 +107,26 @@
 }
 
 @section Scripts{
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script>
         $(document).ready(function () {
+
+           var addCategoryForm = $('#addCategoryForm').validate({
+                errorElement: "div",
+                errorPlacement: function (error, element) {
+                    error.addClass("invalid-feedback");
+                    error.insertAfter(element);
+                }
+            });
+
+           var detailCategoryForm = $('#detailCategoryForm').validate({
+                errorElement: "div",
+                errorPlacement: function (error, element) {
+                    error.addClass("invalid-feedback");
+                    error.insertAfter(element);
+                }
+            });
+
             var data;
             var table = $("#categoryDataTable").DataTable({
                 "responsive": true,
@@ -174,13 +196,18 @@
 
             // Add Edit Delete Operation
             $('#detailCategoryModal').on('click', '#btnSave', function () {
-                data.Name = $('#detailCategoryModal').find('#name').val();
-                $.post('/Category/EditCategory', { id: data.ID, Category: data }, function (returnedData) {
-                    table.ajax.reload();
-                    $('#detailCategoryModal').modal('hide');
-                }).fail(function () {
-                    console.log("error");
-                }, "json");
+                if ($('#detailCategoryForm').valid()) {
+
+                    data.Name = $('#detailCategoryForm').find('#name').val();
+                    $.post('/Category/EditCategory', { id: data.ID, Category: data }, function (returnedData) {
+                        table.ajax.reload();
+                        $('#detailCategoryModal').modal('hide');
+                    }).fail(function () {
+                        console.log("error");
+                    }, "json");
+                } 
+
+                
             });
 
             $('#deleteCategoryModal').on('click', '#btnDelete', function () {
@@ -193,16 +220,18 @@
             });
 
             $('#addCategoryModal').on('click', '#btnSave', function () {
-                data = {
-                    Name: $('#addCategoryModal').find('#name').val()
-                };
+                if ($('#addCategoryForm').valid()) {
+                    data = {
+                        Name: $('#addCategoryForm').find('#name').val()
+                    };
 
-                $.post('/Category/AddCategory', { Category: data }, function (returnedData) {
-                    table.ajax.reload();
-                    $('#addCategoryModal').modal('hide');
-                }).fail(function () {
-                    console.log("error");
-                }, "json");
+                    $.post('/Category/AddCategory', { Category: data }, function (returnedData) {
+                        table.ajax.reload();
+                        $('#addCategoryModal').modal('hide');
+                    }).fail(function () {
+                        console.log("error");
+                    }, "json");
+                } 
             });
 
 
@@ -211,6 +240,7 @@
             $('#detailCategoryModal').on('hidden.bs.modal', function (e) {
                 data = [];
                 $('#detailCategoryModal').find('#name').val("");
+                detailCategoryForm.resetForm();
             });
 
             $('#deleteCategoryModal').on('hidden.bs.modal', function (e) {
@@ -220,6 +250,7 @@
             $('#addCategoryModal').on('hidden.bs.modal', function (e) {
                 data = [];
                 $('#addCategoryModal').find('#name').val("");
+                addCategoryForm.resetForm();
             });
         });
 

@@ -10,9 +10,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Linq.Dynamic.Core;
 using AMMPSI.Models;
 using AMMPSI.Models.AccountViewModels;
 using AMMPSI.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace AMMPSI.Controllers
 {
@@ -22,12 +24,14 @@ namespace AMMPSI.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IEmailSender _emailSender;
         private readonly ILogger _logger;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
+            RoleManager<IdentityRole> roleManager,
             IEmailSender emailSender,
             ILogger<AccountController> logger)
         {
@@ -35,6 +39,7 @@ namespace AMMPSI.Controllers
             _signInManager = signInManager;
             _emailSender = emailSender;
             _logger = logger;
+            _roleManager = roleManager;
         }
 
         [TempData]
@@ -61,7 +66,7 @@ namespace AMMPSI.Controllers
             {
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+                var result = await _signInManager.PasswordSignInAsync(model.UserName, model.Password, model.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
@@ -208,6 +213,9 @@ namespace AMMPSI.Controllers
         [AllowAnonymous]
         public IActionResult Register(string returnUrl = null)
         {
+            var roleList = _roleManager.Roles.ToList();
+            ViewBag.Role = new SelectList(roleList, "Name", "Name");
+
             ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
@@ -220,17 +228,28 @@ namespace AMMPSI.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                var user = new ApplicationUser { UserName = model.UserName };
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
-                    await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl);
+                    //var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    //var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
+                    //await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl);
 
-                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    //await _signInManager.SignInAsync(user, isPersistent: false);
+
+                    var resultAddRole = await _userManager.AddToRoleAsync(user, model.Role);
+                    if (resultAddRole.Succeeded)
+                    {
+                        return RedirectToLocal(returnUrl);
+                    }
+                    else
+                    {
+                        AddErrors(resultAddRole);
+                    }
+
                     _logger.LogInformation("User created a new account with password.");
                     return RedirectToLocal(returnUrl);
                 }
@@ -388,19 +407,31 @@ namespace AMMPSI.Controllers
         }
 
         [HttpGet]
-        [AllowAnonymous]
-        public IActionResult ResetPassword(string code = null)
+        public async Task<IActionResult> ResetPassword(string id)
         {
-            if (code == null)
+            if (String.IsNullOrEmpty(id))
             {
-                throw new ApplicationException("A code must be supplied for password reset.");
+                return NotFound();
             }
-            var model = new ResetPasswordViewModel { Code = code };
-            return View(model);
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user != null)
+            {
+                ResetPasswordViewModel model = new ResetPasswordViewModel();
+                model.UserName = user.UserName;
+                model.UserId = user.Id;
+                model.Code = await _userManager.GeneratePasswordResetTokenAsync(user);
+                return View(model);
+            }
+            else
+            {
+                return NotFound();
+
+            }
+
         }
 
         [HttpPost]
-        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
@@ -408,7 +439,7 @@ namespace AMMPSI.Controllers
             {
                 return View(model);
             }
-            var user = await _userManager.FindByEmailAsync(model.Email);
+            var user = await _userManager.FindByIdAsync(model.UserId);
             if (user == null)
             {
                 // Don't reveal that the user does not exist
@@ -417,7 +448,13 @@ namespace AMMPSI.Controllers
             var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
             if (result.Succeeded)
             {
-                return RedirectToAction(nameof(ResetPasswordConfirmation));
+                model.StatusMessage = "Password telah berhasil diubah";
+                model.UserName = user.UserName;
+                model.UserId = user.Id;
+                model.Code = await _userManager.GeneratePasswordResetTokenAsync(user);
+                model.Password = null;
+                model.ConfirmPassword = null;
+                return View(model);
             }
             AddErrors(result);
             return View();
@@ -436,6 +473,387 @@ namespace AMMPSI.Controllers
         {
             return View();
         }
+
+        [HttpGet]
+        public IActionResult Role()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetRoleTableData()
+        {
+            try
+            {
+                var draw = HttpContext.Request.Form["draw"].FirstOrDefault();
+
+                // Skip number of Rows count  
+                var start = Request.Form["start"].FirstOrDefault();
+
+                // Paging Length 10,20  
+                var length = Request.Form["length"].FirstOrDefault();
+
+                // Sort Column Name  
+                var sortColumn = Request.Form["columns[" + Request.Form["order[0][column]"].FirstOrDefault() + "][data]"].FirstOrDefault();
+
+                // Sort Column Direction (asc, desc)  
+                var sortColumnDirection = Request.Form["order[0][dir]"].FirstOrDefault();
+
+                // Search Value from (Search box)  
+                var searchValue = Request.Form["search[value]"].FirstOrDefault();
+
+                //Paging Size (10, 20, 50,100)  
+                int pageSize = length != null ? Convert.ToInt32(length) : 0;
+
+                int skip = start != null ? Convert.ToInt32(start) : 0;
+
+                int recordsTotal = 0;
+
+
+                // getting all Role data 
+
+                var roleList = await _roleManager.Roles.ToListAsync();
+                List<RoleListViewModel> roleData = new List<RoleListViewModel>();
+                foreach (var item in roleList)
+                {
+                    roleData.Add(new RoleListViewModel
+                    {
+                        RoleId = item.Id,
+                        RoleName = item.Name
+                    });
+                }
+
+                //Sorting  
+                if (!(string.IsNullOrEmpty(sortColumn) && string.IsNullOrEmpty(sortColumnDirection)))
+                {
+                    roleData = roleData.AsQueryable().OrderBy(sortColumn + " " + sortColumnDirection).ToList();
+                }
+
+                //Search  
+                if (!string.IsNullOrEmpty(searchValue))
+                {
+                    roleData = roleData.Where(m => m.RoleName.Contains(searchValue)).ToList();
+                }
+
+                //total number of rows counts   
+                recordsTotal = roleData.Count();
+                //Paging   
+                var data = roleData.Skip(skip).Take(pageSize).ToList();
+                //Returning Json Data  
+                return Json(new { draw = draw, recordsFiltered = recordsTotal, recordsTotal = recordsTotal, data = data });
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        [HttpGet]
+        public IActionResult CreateRole()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateRole(RoleViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var isRoleExists = await _roleManager.RoleExistsAsync(model.RoleName);
+                if (!isRoleExists)
+                {
+                    var role = new IdentityRole();
+                    role.Name = model.RoleName;
+                    var result = await _roleManager.CreateAsync(role);
+                    if (result.Succeeded)
+                    {
+                        return RedirectToAction("Index","Home");
+                    }
+                    AddErrors(result);
+                }
+            }
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AssignRole(string id, string userName)
+        {
+            var roleList = await _roleManager.Roles.ToListAsync();
+            ViewBag.Role = new SelectList(roleList, "Name", "Name");
+            AssignRoleViewModel data = new AssignRoleViewModel
+            {
+                UserId = id,
+                UserName = userName
+            };
+            return View(data);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AssignRole(AssignRoleViewModel model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user != null)
+            {
+                var roleList = await _userManager.GetRolesAsync(user);
+                if (roleList != null)
+                {
+                    var resultDeleted = await _userManager.RemoveFromRolesAsync(user, roleList);
+                }
+
+                var result = await _userManager.AddToRoleAsync(user, model.RoleName);
+
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("Index","Account");
+                }
+            }
+            else
+            {
+                return NotFound();
+            }
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DeleteRole(string id)
+        {
+            if (String.IsNullOrEmpty(id))
+            {
+                return NotFound();
+            }
+
+            var role = await _roleManager.FindByIdAsync(id);
+
+            if (role != null)
+            {
+                RoleViewModel data = new RoleViewModel
+                {
+                    RoleId = role.Id,
+                    RoleName = role.Name
+                };
+
+                return View(data);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteRole(RoleViewModel model)
+        {
+            var role = await _roleManager.FindByIdAsync(model.RoleId);
+
+            if (role != null)
+            {
+                var result = await _roleManager.DeleteAsync(role);
+                if (result.Succeeded)
+                {
+
+                    return RedirectToAction(nameof(Role));
+                }
+                else
+                {
+                    AddErrors(result);
+                }
+            }
+            else
+            {
+                return NotFound();
+            }
+
+            return View(model.RoleId);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditRole(string id)
+        {
+            if (String.IsNullOrWhiteSpace(id))
+            {
+                return NotFound();
+            }
+
+            var role = await _roleManager.FindByIdAsync(id);
+
+            if (role != null)
+            {
+                RoleViewModel data = new RoleViewModel
+                {
+                    RoleId = role.Id,
+                    RoleName = role.Name
+                };
+
+                return View(data);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditRole(RoleViewModel model)
+        {
+            if (model.RoleId == null)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var result = await _roleManager.FindByIdAsync(model.RoleId);
+                    result.Name = model.RoleName;
+                    await _roleManager.UpdateAsync(result);
+                    return RedirectToAction(nameof(Role));
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!await _roleManager.RoleExistsAsync(model.RoleName))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+
+            return View(model);
+        }
+
+        public IActionResult Index()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetAccountTableData()
+        {
+            try
+            {
+                var draw = HttpContext.Request.Form["draw"].FirstOrDefault();
+
+                // Skip number of Rows count  
+                var start = Request.Form["start"].FirstOrDefault();
+
+                // Paging Length 10,20  
+                var length = Request.Form["length"].FirstOrDefault();
+
+                // Sort Column Name  
+                var sortColumn = Request.Form["columns[" + Request.Form["order[0][column]"].FirstOrDefault() + "][data]"].FirstOrDefault();
+
+                // Sort Column Direction (asc, desc)  
+                var sortColumnDirection = Request.Form["order[0][dir]"].FirstOrDefault();
+
+                // Search Value from (Search box)  
+                var searchValue = Request.Form["search[value]"].FirstOrDefault();
+
+                //Paging Size (10, 20, 50,100)  
+                int pageSize = length != null ? Convert.ToInt32(length) : 0;
+
+                int skip = start != null ? Convert.ToInt32(start) : 0;
+
+                int recordsTotal = 0;
+
+                List<AccountViewModel> accountData = new List<AccountViewModel>();
+                // getting all Proposal data 
+                var userList = await _userManager.Users.ToListAsync();
+
+                
+
+                foreach (var item in userList)
+                {
+                    var userRole = await _userManager.GetRolesAsync(item);
+                    accountData.Add(new AccountViewModel
+                    {
+                        ID = item.Id,
+                        UserName = item.UserName,
+                        RoleName = userRole.FirstOrDefault()
+                    });
+                }
+
+                //Sorting  
+                if (!(string.IsNullOrEmpty(sortColumn) && string.IsNullOrEmpty(sortColumnDirection)))
+                {
+                    accountData = accountData.AsQueryable().OrderBy(sortColumn + " " + sortColumnDirection).ToList();
+                }
+                //Search  
+                if (!string.IsNullOrEmpty(searchValue))
+                {
+                    accountData = accountData.Where(m => m.UserName.Contains(searchValue)).ToList();
+                }
+
+                //total number of rows counts   
+                recordsTotal = accountData.Count();
+                //Paging   
+                var data = accountData.Skip(skip).Take(pageSize).ToList();
+                //Returning Json Data  
+                return Json(new { draw = draw, recordsFiltered = recordsTotal, recordsTotal = recordsTotal, data = data });
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user != null)
+            {
+                AccountViewModel data = new AccountViewModel
+                {
+                    ID = user.Id,
+                    UserName = user.UserName
+                };
+                return View(data);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteUser(AccountViewModel model)
+        {
+            ApplicationUser user = await _userManager.FindByIdAsync(model.ID);
+
+            if (user != null)
+            {
+                IdentityResult result = await _userManager.DeleteAsync(user);
+                if (result.Succeeded)
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    AddErrors(result);
+                }
+            }
+            else
+            {
+                return NotFound();
+            }
+
+            return View(model.ID);
+        }
+
 
         #region Helpers
 

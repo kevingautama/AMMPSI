@@ -7,9 +7,11 @@ using AMMPSI.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq.Dynamic.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AMMPSI.Controllers
 {
+    [Authorize]
     public class AssetController : Controller
     {
         private readonly AMContext _context;
@@ -59,16 +61,23 @@ namespace AMMPSI.Controllers
                 List<AssetViewModel> AssetData = new List<AssetViewModel>();
                 // getting all Proposal data 
                 var AssetList = await _context.Asset.Where(a => a.DeletedDate == null).ToListAsync();
+                var locationList = await _context.Location.ToListAsync();
 
                 foreach (var item in AssetList)
                 {
                     var category = await _context.Category.FindAsync(item.CategoryID);
+                    var latestLog = await _context.MovementLog.Where(a => a.AssetID == item.ID).OrderBy(a => a.CreatedDate).LastOrDefaultAsync();
+                    string lastLocation = "-";
+                    if(latestLog != null)
+                    {
+                        lastLocation = locationList.Where(a => a.ID == latestLog.LocationID).FirstOrDefault().Name;
+                    }
                     AssetData.Add(new AssetViewModel
                     {
                         ID = item.ID,
                         Name = item.Name,
                         CategoryName = category.Name,
-                        CurrentLocation = "skrap"
+                        CurrentLocation = lastLocation
                     });
                 }
 
@@ -124,6 +133,7 @@ namespace AMMPSI.Controllers
             }
 
             Asset.CreatedDate = DateTime.Now;
+            Asset.CreatedBy = User.Identity.Name;
             _context.Asset.Add(Asset);
             await _context.SaveChangesAsync();
 
@@ -144,6 +154,7 @@ namespace AMMPSI.Controllers
             }
 
             Asset.UpdatedDate = DateTime.Now;
+            Asset.UpdatedBy = User.Identity.Name;
             _context.Entry(Asset).State = EntityState.Modified;
 
             try
@@ -180,6 +191,7 @@ namespace AMMPSI.Controllers
             }
 
             Asset.DeletedDate = DateTime.Now;
+            Asset.DeletedBy = User.Identity.Name;
             _context.Entry(Asset).State = EntityState.Modified;
 
             try

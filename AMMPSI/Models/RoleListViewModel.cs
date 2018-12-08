@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace AMMPSI.Models
 {
-    public class LocationViewModel : Location
+    public class RoleListViewModel
     {
-        public String TotalAsset { get; set; }
-        public int IntTotalAsset { get; set; }
+        public String RoleId { get; set; }
+        public String RoleName { get; set; }
     }
 }

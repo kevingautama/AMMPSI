@@ -7,9 +7,11 @@ using AMMPSI.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq.Dynamic.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AMMPSI.Controllers
 {
+    [Authorize]
     public class CategoryController : Controller
     {
         private readonly AMContext _context;
@@ -53,20 +55,18 @@ namespace AMMPSI.Controllers
 
                 int recordsTotal = 0;
 
-
-
-
                 List<CategoryViewModel> categoryData = new List<CategoryViewModel>();
                 // getting all Proposal data 
                 var categoryList = await _context.Category.Where(a => a.DeletedDate == null).ToListAsync();
 
                 foreach (var item in categoryList)
                 {
+                    var countAsset = _context.Asset.Where(a => a.CategoryID == item.ID).Count().ToString();
                     categoryData.Add(new CategoryViewModel
                     {
                         ID = item.ID,
                         Name = item.Name,
-                        TotalAsset = "Infinity"
+                        TotalAsset = countAsset
                     });
                 }
 
@@ -135,6 +135,7 @@ namespace AMMPSI.Controllers
             }
 
             category.CreatedDate = DateTime.Now;
+            category.CreatedBy = User.Identity.Name;
             _context.Category.Add(category);
             await _context.SaveChangesAsync();
 
@@ -155,6 +156,7 @@ namespace AMMPSI.Controllers
             }
 
             category.UpdatedDate = DateTime.Now;
+            category.UpdatedBy = User.Identity.Name;
             _context.Entry(category).State = EntityState.Modified;
 
             try
@@ -191,6 +193,7 @@ namespace AMMPSI.Controllers
             }
 
             category.DeletedDate = DateTime.Now;
+            category.DeletedBy = User.Identity.Name;
             _context.Entry(category).State = EntityState.Modified;
 
             try

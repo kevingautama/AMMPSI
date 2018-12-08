@@ -36,7 +36,7 @@
         <div class="sidebar-menu">
             <div class="sidebar-header">
                 <div class="logo">
-                    <a href="index.html"><img src="~/lib/strdash/images/icon/logo.png" alt="logo"></a>
+                    <a href="@Url.Action("Index","Home")"><img src="~/lib/strdash/images/icon/logo.png" alt="logo"></a>
                 </div>
             </div>
             <div class="main-menu">
@@ -65,7 +65,19 @@
                                     <li><a href="@Url.Action("Index","Transaction")">approval</a></li>
                                     <li><a href="@Url.Action("MoveAsset","Transaction")">move</a></li>
                                     <li><a href="@Url.Action("MoveTask","Transaction")">task</a></li>
-                                    <li><a href="#">history</a></li>
+                                    <li><a href="@Url.Action("MoveLog","Transaction")">history</a></li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="javascript:void(0)" aria-expanded="true">
+                                    <i class="ti-layout-sidebar-left"></i><span>
+                                        account
+                                    </span>
+                                </a>
+                                <ul class="collapse">
+                                    <li><a href="@Url.Action("Register","Account")">add account</a></li>
+                                    <li><a href="@Url.Action("Index","Account")">account list</a></li>
+                                    <li><a href="@Url.Action("Role","Account")">role</a></li>
                                 </ul>
                             </li>
                         </ul>
@@ -112,16 +124,8 @@
                             </ul>
                         </div>
                     </div>
-                    <div class="col-sm-6 clearfix">
-                        <div class="user-profile pull-right">
-                            <h4 class="user-name dropdown-toggle" data-toggle="dropdown">Kumkum Rai <i class="fa fa-angle-down"></i></h4>
-                            <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#">Message</a>
-                                <a class="dropdown-item" href="#">Settings</a>
-                                <a class="dropdown-item" href="#">Log Out</a>
-                            </div>
-                        </div>
-                    </div>
+                    @await Html.PartialAsync("_LoginPartial")
+                    
                 </div>
             </div>
             <!-- page title area end -->

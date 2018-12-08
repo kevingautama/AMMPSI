@@ -1,0 +1,87 @@
+﻿
+@{
+    ViewData["Title"] = "Role";
+    ViewData["BreadCrumb"] = "Account";
+}
+
+@section DataTableSytleSheets{
+    <link href="~/lib/datatable/css/jquery.dataTables.css" rel="stylesheet" />
+    <link href="~/lib/datatable/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+    <link href="~/lib/datatable/css/responsive.bootstrap.min.css" rel="stylesheet" />
+    <link href="~/lib/datatable/css/responsive.jqueryui.min.css" rel="stylesheet" />
+}
+
+
+<div class="row">
+    <!-- Primary table start -->
+    <div class="col-12 mt-5">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="header-title"><a asp-controller="Account" asp-action="CreateRole" class="btn btn-sm btn-primary" style="margin-bottom: 10px;"><em class="icon-plus"> </em>Create Role</a></h4>
+                <div class="data-tables datatable-primary">
+                    <table class="table table-striped my-4 w-100" id="roleTable">
+                        <thead>
+                            <tr>
+                                <th>Id Role</th>
+                                <th data-priority="1">Nama Role</th>
+                                <th></th>
+
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Primary table end -->
+</div>
+
+@section DataTableScripts{
+    <script src="~/lib/datatable/js/jquery.dataTables.min.js"></script>
+    <script src="~/lib/datatable/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/lib/datatable/js/dataTables.responsive.min.js"></script>
+    <script src="~/lib/datatable/js/responsive.bootstrap.min.js"></script>
+}
+
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            $("#roleTable").DataTable({
+                "processing": true, // for show progress bar
+                "serverSide": true, // for process server side
+                "filter": true, // this is for disable filter (search box)
+                "orderMulti": false, // for disable multiple column at once
+                "language": {
+                    "emptyTable": "Tidak Ada Data Role"
+                },
+                "ajax": {
+                    "url": "/Account/GetRoleTableData",
+                    "type": "POST",
+                    "datatype": "json"
+                },
+                "columnDefs":
+                    [{
+                        "targets": [0],
+                        "visible": false,
+                        "searchable": false
+                    }],
+                "columns": [
+                    { "data": "RoleId", "name": "Id Role", "autoWidth": true },
+                    { "data": "RoleName", "name": "Nama Role", "autoWidth": true },
+                    {
+                        "render": function (data, type, full, meta) {
+                            if (full.RoleName !== "Admin") {
+                                return '<a class="btn btn-primary" href="/Account/EditRole?id=' + full.RoleId + '"><em class="fa fa-edit" style="color:white"></em></a>&nbsp;<a class="btn btn-danger" href="/Account/DeleteRole?id=' + full.RoleId + '"><em class="fa fa-trash" style="color:white"></em></a>';
+                            }
+                            return "";
+                        }
+
+                    }
+                ]
+
+            });
+        });
+    </script>
+
+}

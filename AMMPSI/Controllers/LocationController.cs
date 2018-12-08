@@ -7,9 +7,11 @@ using AMMPSI.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq.Dynamic.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AMMPSI.Controllers
 {
+    [Authorize]
     public class LocationController : Controller
     {
         private readonly AMContext _context;
@@ -57,19 +59,34 @@ namespace AMMPSI.Controllers
 
 
                 List<LocationViewModel> locationData = new List<LocationViewModel>();
-                // getting all Proposal data 
+                var movementLog = await _context.MovementLog.Where(a => a.DeletedDate == null).ToListAsync();
+                var moveLogGroupByAsset = movementLog.GroupBy(a => a.AssetID);
                 var locationList = await _context.Location.Where(a => a.DeletedDate == null).ToListAsync();
 
                 foreach(var item in locationList)
                 {
+                    int assetCount = 0;
+
+                    foreach(var log in moveLogGroupByAsset)
+                    {
+                        if(_context.Asset.FindAsync(log.First().AssetID).Result.DeletedDate == null)
+                        {
+                            if (log.OrderBy(a => a.CreatedDate).LastOrDefault().LocationID == item.ID)
+                            {
+                                assetCount = assetCount + 1;
+                            }
+                        }
+                    }
+
                     locationData.Add(new LocationViewModel
                     {
                         ID = item.ID,
                         Name = item.Name,
                         Floor = item.Floor,
-                        TotalAsset = "Infinity"
+                        TotalAsset = assetCount.ToString()
                     });
                 }
+                
 
                 //Sorting  
                 if (!(string.IsNullOrEmpty(sortColumn) && string.IsNullOrEmpty(sortColumnDirection)))
@@ -141,6 +158,7 @@ namespace AMMPSI.Controllers
             }
 
             location.CreatedDate = DateTime.Now;
+            location.CreatedBy = User.Identity.Name;
             _context.Location.Add(location);
             await _context.SaveChangesAsync();
 
@@ -161,6 +179,7 @@ namespace AMMPSI.Controllers
             }
 
             location.UpdatedDate = DateTime.Now;
+            location.UpdatedBy= User.Identity.Name;
             _context.Entry(location).State = EntityState.Modified;
 
             try

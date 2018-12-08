@@ -1,0 +1,82 @@
+﻿@{
+    ViewData["Title"] = "Account";
+    ViewData["BreadCrumb"] = "Account";
+}
+@section DataTableSytleSheets{
+    <link href="~/lib/datatable/css/jquery.dataTables.css" rel="stylesheet" />
+    <link href="~/lib/datatable/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+    <link href="~/lib/datatable/css/responsive.bootstrap.min.css" rel="stylesheet" />
+    <link href="~/lib/datatable/css/responsive.jqueryui.min.css" rel="stylesheet" />
+}
+
+<div class="row">
+    <!-- Primary table start -->
+    <div class="col-12 mt-5">
+        <div class="card">
+            <div class="card-body">
+                <div class="data-tables datatable-primary">
+                    <table id="accountDataTable" class="text-center">
+                        <thead class="text-capitalize">
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Role</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Primary table end -->
+</div>
+
+@section DataTableScripts{
+    <script src="~/lib/datatable/js/jquery.dataTables.min.js"></script>
+    <script src="~/lib/datatable/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/lib/datatable/js/dataTables.responsive.min.js"></script>
+    <script src="~/lib/datatable/js/responsive.bootstrap.min.js"></script>
+}
+
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            var data;
+            var table = $("#accountDataTable").DataTable({
+                "responsive": true,
+                "processing": true, // for show progress bar
+                "serverSide": true, // for process server side
+                "filter": true, // this is for disable filter (search box)
+                "orderMulti": false, // for disable multiple column at once
+                "ajax": {
+                    "url": "/Account/GetAccountTableData",
+                    "type": "POST",
+                    "datatype": "json"
+                },
+                "columnDefs":
+                    [{
+                        "targets": [0],
+                        "visible": false,
+                        "searchable": false
+                    }],
+                "columns": [
+                    { "data": "ID", "name": "ID", "autoWidth": true },
+                    { "data": "UserName", "name": "Name", "autoWidth": true },
+                    { "data": "RoleName", "name": "Role", "autoWidth": true },
+                    {
+                        "render": function (data, type, full, meta) {
+
+                            return '<a class="btn btn-primary" href="/Account/AssignRole?id=' + full.ID + '"><em class="fa fa-edit" style="color:white"></em></a>&nbsp;<a class="btn btn-warning" href="/Account/ResetPassword?id=' + full.ID + '"><em class="fa fa-edit" style="color:white"></em></a>&nbsp;<a class="btn btn-danger" href="/Account/DeleteUser?id=' + full.ID + '"><em class="fa fa-trash" style="color:white"></em></a>';
+                        }
+                    }
+
+                ]
+
+            });
+        });
+
+    </script>
+
+}

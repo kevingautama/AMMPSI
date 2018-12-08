@@ -1,0 +1,24 @@
+﻿@model RoleViewModel
+@{
+    ViewData["Title"] = "DeleteRole";
+    ViewData["BreadCrumb"] = "Account";
+}
+
+<div class="row">
+    <!-- Primary table start -->
+    <div class="col-12 mt-5">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="header-title"><a asp-controller="Account" asp-action="Role" class="btn btn-primary" style="margin-bottom: 10px;"><em class="icon-arrow-left"> </em>Back</a></h4>
+                <h3>Are you sure to delete</h3>
+                Role : <h4>@Html.DisplayFor(model => model.RoleName)</h4>
+                <hr />
+                <form method="post" asp-action="DeleteRole">
+                    <input type="hidden" asp-for="RoleId" />
+                    <button type="submit" class="btn btn-default">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Primary table end -->
+</div>

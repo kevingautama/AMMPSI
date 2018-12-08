@@ -7,9 +7,11 @@ using AMMPSI.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq.Dynamic.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AMMPSI.Controllers
 {
+    [Authorize]
     public class TransactionController : Controller
     {
         private readonly AMContext _context;
@@ -54,7 +56,7 @@ namespace AMMPSI.Controllers
                 Status = "Order",
                 LocationID = moveRequest.LocationID,
                 ApprovedBy = null,
-                CreatedBy = "",
+                CreatedBy = User.Identity.Name,
                 CreatedDate = DateTime.Now
             };
 
@@ -67,7 +69,7 @@ namespace AMMPSI.Controllers
                     MovementID = movement.ID,
                     AssetID = item,
                     IsMoved = false,
-                    CreatedBy = "",
+                    CreatedBy = User.Identity.Name,
                     CreatedDate = DateTime.Now
                 };
 
@@ -80,7 +82,7 @@ namespace AMMPSI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetAssetMoveableTableData()
+        public async Task<IActionResult> GetAssetMoveableTableData(string locationId)
         {
             try
             {
@@ -114,16 +116,32 @@ namespace AMMPSI.Controllers
                 List<AssetViewModel> assetData = new List<AssetViewModel>();
                 // getting all Proposal data 
                 var assetList = await _context.Asset.Where(a => a.DeletedDate == null).ToListAsync();
+                var locationList = await _context.Location.ToListAsync();
 
                 foreach (var item in assetList)
                 {
                     var category = await _context.Category.FindAsync(item.CategoryID);
+                    var latestLog = await _context.MovementLog.Where(a => a.AssetID == item.ID).OrderBy(a => a.CreatedDate).LastOrDefaultAsync();
+                    string lastLocation = "-";
+                    if (latestLog != null)
+                    {
+                        if (!String.IsNullOrWhiteSpace(locationId))
+                        {
+                            if (latestLog.LocationID == int.Parse(locationId))
+                            {
+                                continue;
+                            }
+                        }
+
+                        lastLocation = locationList.Where(a => a.ID == latestLog.LocationID).FirstOrDefault().Name;
+                    }
+
                     assetData.Add(new AssetViewModel
                     {
                         ID = item.ID,
                         Name = item.Name,
                         CategoryName = category.Name,
-                        CurrentLocation = "room1"
+                        CurrentLocation = lastLocation
                     });
                 }
 
@@ -471,7 +489,7 @@ namespace AMMPSI.Controllers
 
             if (await MoveItem(movementItem, movement.LocationID))
             {
-                IsMoveDone(movement);
+                await IsMoveDone(movement);
                 return NoContent();
             }
             
@@ -514,7 +532,7 @@ namespace AMMPSI.Controllers
 
             if (flag)
             {
-                IsMoveDone(movement);
+                await IsMoveDone(movement);
                 return NoContent();
             }
 
@@ -531,8 +549,8 @@ namespace AMMPSI.Controllers
             {
                 AssetID = item.AssetID,
                 LocationID = locationId,
-                MovedBy = "",
-                CreatedBy = "",
+                MovedBy = User.Identity.Name,
+                CreatedBy = User.Identity.Name,
                 CreatedDate = DateTime.Now
             };
 
@@ -582,8 +600,9 @@ namespace AMMPSI.Controllers
             return true;
         }
 
-        public async void IsMoveDone(Movement move)
+        public async Task IsMoveDone(Movement move)
         {
+
             var movementItem = await _context.MovementItem.Where(a => a.DeletedDate == null && a.MovementID == move.ID).ToListAsync();
 
             bool flag = true;
