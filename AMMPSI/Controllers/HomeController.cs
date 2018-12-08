@@ -119,54 +119,54 @@ namespace AMMPSI.Controllers
             {
                 var data = _context.Movement.TakeLast(5);
 
-                //foreach (var item in data)
-                //{
-                //    foreach (var i in item.MovementItem)
-                //    {
-                //        dataList.Add(
-                //            new LastActivitesViewModel
+                foreach (var item in data)
+                {
+                    foreach (var i in item.MovementItem)
+                    {
+                        dataList.Add(
+                            new LastActivitiesViewModel
+                            {
+                                UserName = item.CreatedBy,
+                                AssetName = i.Asset.Name,
+                                Status = item.Status,
+                                CurrentLocation = item.Location.Name,
+                                ActivityTime = ActivityTimeFunc(item.CreatedDate)
+                            }
+                        );
+                    }
+
+                }
+
+                //dataList.Add(
+                //            new LastActivitiesViewModel
                 //            {
-                //                UserName = item.CreatedBy,
-                //                AssetName = i.Asset.Name,
-                //                Status = item.Status,
-                //                CurrentLocation = item.Location.Name,
-                //                ActivityTime = ActivityTimeFunc(item.CreatedDate)
+                //                UserName = "Ryan Gunawan",
+                //                AssetName = "Meja",
+                //                Status = "ORDER",
+                //                CurrentLocation = "Dapur",
+                //                ActivityTime = "5 hours ago"
                 //            }
                 //        );
-                //    }
-
-                //}
-
-                dataList.Add(
-                            new LastActivitiesViewModel
-                            {
-                                UserName = "Ryan Gunawan",
-                                AssetName = "Meja",
-                                Status = "ORDER",
-                                CurrentLocation = "Dapur",
-                                ActivityTime = "5 hours ago"
-                            }
-                        );
-                dataList.Add(
-                            new LastActivitiesViewModel
-                            {
-                                UserName = "Ryan Gunawan",
-                                AssetName = "Meja",
-                                Status = "ORDER",
-                                CurrentLocation = "Dapur",
-                                ActivityTime = "5 hours ago"
-                            }
-                        );
-                dataList.Add(
-                            new LastActivitiesViewModel
-                            {
-                                UserName = "Ryan Gunawan",
-                                AssetName = "Meja",
-                                Status = "ORDER",
-                                CurrentLocation = "Dapur",
-                                ActivityTime = "5 hours ago"
-                            }
-                        );
+                //dataList.Add(
+                //            new LastActivitiesViewModel
+                //            {
+                //                UserName = "Ryan Gunawan",
+                //                AssetName = "Meja",
+                //                Status = "ORDER",
+                //                CurrentLocation = "Dapur",
+                //                ActivityTime = "5 hours ago"
+                //            }
+                //        );
+                //dataList.Add(
+                //            new LastActivitiesViewModel
+                //            {
+                //                UserName = "Ryan Gunawan",
+                //                AssetName = "Meja",
+                //                Status = "ORDER",
+                //                CurrentLocation = "Dapur",
+                //                ActivityTime = "5 hours ago"
+                //            }
+                //        );
             });
 
             return Ok(dataList.ToArray());

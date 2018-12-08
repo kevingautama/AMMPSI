@@ -40,28 +40,30 @@
 <div class="modal fade" id="addLocationModal">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add Location</h5>
-                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="col-form-label">Name</label>
-                    <input class="form-control" type="text" id="name">
+            <form id="addLocationForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Location</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                 </div>
-                <div class="form-group">
-                    <label class="col-form-label">Floor</label>
-                    <input class="form-control" type="number" id="floor">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="col-form-label">Name</label>
+                        <input class="form-control" type="text" id="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">Floor</label>
+                        <input class="form-control" type="number" id="floor" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">Description</label>
+                        <textarea class="form-control" rows="5" id="description"></textarea>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="col-form-label">Description</label>
-                    <textarea class="form-control" rows="5" id="description"></textarea>
+                <div class="modal-footer">
+                    <button type="button" data-dismiss="modal" class="btn">Cancel</button>
+                    <button type="button" id="btnSave" class="btn btn-success">Save changes</button>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" data-dismiss="modal" class="btn">Cancel</button>
-                <button type="button" id="btnSave" class="btn btn-success">Save changes</button>
-            </div>
+            </form>
         </div>
     </div>
 </div>
@@ -69,27 +71,29 @@
 <div class="modal fade" id="detailLocationModal">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Detail</h5>
-                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="col-form-label">Name</label>
-                    <input class="form-control" type="text" id="name">
+            <form id="detailLocationForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detail</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                 </div>
-                <div class="form-group">
-                    <label class="col-form-label">Floor</label>
-                    <input class="form-control" type="number" id="floor">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="col-form-label">Name</label>
+                        <input class="form-control" type="text" id="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">Floor</label>
+                        <input class="form-control" type="number" id="floor" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">Description</label>
+                        <textarea class="form-control" rows="5" id="description"></textarea>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="col-form-label">Description</label>
-                    <textarea class="form-control" rows="5" id="description"></textarea>
+                <div class="modal-footer">
+                    <button type="button" id="btnSave" class="btn btn-primary">Save changes</button>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" id="btnSave" class="btn btn-primary">Save changes</button>
-            </div>
+            </form>
         </div>
     </div>
 </div>
@@ -122,6 +126,23 @@
 @section Scripts{
     <script>
         $(document).ready(function () {
+
+            var addLocationForm = $('#addLocationForm').validate({
+                errorElement: "div",
+                errorPlacement: function (error, element) {
+                    error.addClass("invalid-feedback");
+                    error.insertAfter(element);
+                }
+            });
+
+            var detailLocationForm = $('#detailLocationForm').validate({
+                errorElement: "div",
+                errorPlacement: function (error, element) {
+                    error.addClass("invalid-feedback");
+                    error.insertAfter(element);
+                }
+            });
+
             var data;
             var table = $("#locationDataTable").DataTable({
                 "responsive": true,
@@ -194,15 +215,17 @@
 
             // Add Edit Delete Operation
             $('#detailLocationModal').on('click', '#btnSave', function () {
-                data.Name = $('#detailLocationModal').find('#name').val();
-                data.Floor = $('#detailLocationModal').find('#floor').val();
-                data.Description = $('#detailLocationModal').find('#description').val();
-                $.post('/Location/EditLocation', { id: data.ID, location: data }, function (returnedData) {
-                    table.ajax.reload();
-                    $('#detailLocationModal').modal('hide');
-                }).fail(function () {
-                    console.log("error");
-                }, "json");
+                if ($('#detailLocationForm').valid()) {
+                    data.Name = $('#detailLocationModal').find('#name').val();
+                    data.Floor = $('#detailLocationModal').find('#floor').val();
+                    data.Description = $('#detailLocationModal').find('#description').val();
+                    $.post('/Location/EditLocation', { id: data.ID, location: data }, function (returnedData) {
+                        table.ajax.reload();
+                        $('#detailLocationModal').modal('hide');
+                    }).fail(function () {
+                        console.log("error");
+                    }, "json");
+                }
             });
 
             $('#deleteLocationModal').on('click', '#btnDelete', function () {
@@ -215,19 +238,21 @@
             });
 
             $('#addLocationModal').on('click', '#btnSave', function () {
-                data = {
-                    Name: $('#addLocationModal').find('#name').val(),
-                    Floor: $('#addLocationModal').find('#floor').val(),
-                    Description: $('#addLocationModal').find('#description').val()
-                };
+                if ($('#addLocationForm').valid()) {
+                    data = {
+                        Name: $('#addLocationModal').find('#name').val(),
+                        Floor: $('#addLocationModal').find('#floor').val(),
+                        Description: $('#addLocationModal').find('#description').val()
+                    };
 
-                $.post('/Location/AddLocation', { location: data }, function (returnedData) {
-                    table.ajax.reload();
-                    console.log(returnedData);
-                    $('#addLocationModal').modal('hide');
-                }).fail(function () {
-                    console.log("error");
-                }, "json");
+                    $.post('/Location/AddLocation', { location: data }, function (returnedData) {
+                        table.ajax.reload();
+                        console.log(returnedData);
+                        $('#addLocationModal').modal('hide');
+                    }).fail(function () {
+                        console.log("error");
+                    }, "json");
+                }
             });
 
 
@@ -238,6 +263,7 @@
                 $('#detailLocationModal').find('#name').val("");
                 $('#detailLocationModal').find('#floor').val("");
                 $('#detailLocationModal').find('#description').val("");
+                detailLocationForm.resetForm();
             });
 
             $('#deleteLocationModal').on('hidden.bs.modal', function (e) {
@@ -249,6 +275,7 @@
                 $('#addLocationModal').find('#name').val("");
                 $('#addLocationModal').find('#floor').val("");
                 $('#addLocationModal').find('#description').val("");
+                addLocationForm.resetForm();
             });
         });
 
