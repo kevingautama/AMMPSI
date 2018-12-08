@@ -1,169 +1,212 @@
 /*--------------  coin_sales1 start ------------*/
 if ($('#coin_sales1').length) {
     var ctx = document.getElementById("coin_sales1").getContext('2d');
-    var chart = new Chart(ctx, {
-        // The type of chart we want to create
-        type: 'line',
-        // The data for our dataset
-        data: {
-            labels: ["January", "February", "March", "April", "May", "June", "July", "January", "February", "March", "April", "May"],
-            datasets: [{
-                label: "Sales",
-                backgroundColor: "rgba(117, 19, 246, 0.1)",
-                borderColor: '#0b76b6',
-                data: [18, 41, 86, 49, 20, 35, 20, 50, 49, 30, 45, 25],
-            }]
-        },
-        // Configuration options go here
-        options: {
-            legend: {
-                display: false
-            },
-            animation: {
-                easing: "easeInOutBack"
-            },
-            scales: {
-                yAxes: [{
-                    display: !1,
-                    ticks: {
-                        fontColor: "rgba(0,0,0,0.5)",
-                        fontStyle: "bold",
-                        beginAtZero: !0,
-                        maxTicksLimit: 5,
-                        padding: 0
-                    },
-                    gridLines: {
-                        drawTicks: !1,
-                        display: !1
-                    }
-                }],
-                xAxes: [{
-                    display: !1,
-                    gridLines: {
-                        zeroLineColor: "transparent"
-                    },
-                    ticks: {
-                        padding: 0,
-                        fontColor: "rgba(0,0,0,0.5)",
-                        fontStyle: "bold"
-                    }
-                }]
+    
+    $.ajax({
+        type: "POST",
+        async: false,
+        url: "Home/GetThisYearApprovalRequest",
+        success: function (result) {
+            var totalMoveRequest = 0;
+            for (var i = 0; i < result.length; i++) {
+                totalMoveRequest += result[i];
             }
+            document.getElementsByClassName("total-approval-request")[0].innerText = totalMoveRequest + " need approval"; 
+            var chart = new Chart(ctx, {
+                // The type of chart we want to create
+                type: 'line',
+                // The data for our dataset
+                data: {
+                    labels: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "Desember"],
+                    datasets: [{
+                        label: "Approval Request",
+                        backgroundColor: "rgba(117, 19, 246, 0.1)",
+                        borderColor: '#0b76b6',
+                        data: result,
+                    }]
+                },
+                // Configuration options go here
+                options: {
+                    legend: {
+                        display: false
+                    },
+                    animation: {
+                        easing: "easeInOutBack"
+                    },
+                    scales: {
+                        yAxes: [{
+                            display: !1,
+                            ticks: {
+                                fontColor: "rgba(0,0,0,0.5)",
+                                fontStyle: "bold",
+                                beginAtZero: !0,
+                                maxTicksLimit: 5,
+                                padding: 0
+                            },
+                            gridLines: {
+                                drawTicks: !1,
+                                display: !1
+                            }
+                        }],
+                        xAxes: [{
+                            display: !1,
+                            gridLines: {
+                                zeroLineColor: "transparent"
+                            },
+                            ticks: {
+                                padding: 0,
+                                fontColor: "rgba(0,0,0,0.5)",
+                                fontStyle: "bold"
+                            }
+                        }]
+                    }
+                }
+            });
         }
-    });
+    })
+
+    
 }
 /*--------------  coin_sales1 End ------------*/
 
 /*--------------  coin_sales2 start ------------*/
 if ($('#coin_sales2').length) {
     var ctx = document.getElementById("coin_sales2").getContext('2d');
-    var chart = new Chart(ctx, {
-        // The type of chart we want to create
-        type: 'line',
-        // The data for our dataset
-        data: {
-            labels: ["January", "February", "March", "April", "May", "June", "July", "January", "February", "March", "April", "May"],
-            datasets: [{
-                label: "Sales",
-                backgroundColor: "rgba(240, 180, 26, 0.1)",
-                borderColor: '#F0B41A',
-                data: [18, 41, 86, 49, 20, 65, 64, 50, 49, 30, 45, 25],
-            }]
-        },
-        // Configuration options go here
-        options: {
-            legend: {
-                display: false
-            },
-            animation: {
-                easing: "easeInOutBack"
-            },
-            scales: {
-                yAxes: [{
-                    display: !1,
-                    ticks: {
-                        fontColor: "rgba(0,0,0,0.5)",
-                        fontStyle: "bold",
-                        beginAtZero: !0,
-                        maxTicksLimit: 5,
-                        padding: 0
-                    },
-                    gridLines: {
-                        drawTicks: !1,
-                        display: !1
-                    }
-                }],
-                xAxes: [{
-                    display: !1,
-                    gridLines: {
-                        zeroLineColor: "transparent"
-                    },
-                    ticks: {
-                        padding: 0,
-                        fontColor: "rgba(0,0,0,0.5)",
-                        fontStyle: "bold"
-                    }
-                }]
+
+    $.ajax({
+        type: "POST",
+        async: false,
+        url: "Home/GetThisYearTask",
+        success: function (result) {
+            var totalMoveRequest = 0;
+            for (var i = 0; i < result.length; i++) {
+                totalMoveRequest += result[i];
             }
+            document.getElementsByClassName("total-task")[0].innerText = totalMoveRequest + " tasks"; 
+            var chart = new Chart(ctx, {
+                // The type of chart we want to create
+                type: 'line',
+                // The data for our dataset
+                data: {
+                    labels: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "Desember"],
+                    datasets: [{
+                        label: "Approval",
+                        backgroundColor: "rgba(240, 180, 26, 0.1)",
+                        borderColor: '#F0B41A',
+                        data: result,
+                    }]
+                },
+                // Configuration options go here
+                options: {
+                    legend: {
+                        display: false
+                    },
+                    animation: {
+                        easing: "easeInOutBack"
+                    },
+                    scales: {
+                        yAxes: [{
+                            display: !1,
+                            ticks: {
+                                fontColor: "rgba(0,0,0,0.5)",
+                                fontStyle: "bold",
+                                beginAtZero: !0,
+                                maxTicksLimit: 5,
+                                padding: 0
+                            },
+                            gridLines: {
+                                drawTicks: !1,
+                                display: !1
+                            }
+                        }],
+                        xAxes: [{
+                            display: !1,
+                            gridLines: {
+                                zeroLineColor: "transparent"
+                            },
+                            ticks: {
+                                padding: 0,
+                                fontColor: "rgba(0,0,0,0.5)",
+                                fontStyle: "bold"
+                            }
+                        }]
+                    }
+                }
+            });
         }
-    });
+    })
+    
 }
 /*--------------  coin_sales2 End ------------*/
 
 /*--------------  coin_sales3 start ------------*/
 if ($('#coin_sales3').length) {
     var ctx = document.getElementById("coin_sales3").getContext('2d');
-    var chart = new Chart(ctx, {
-        // The type of chart we want to create
-        type: 'line',
-        // The data for our dataset
-        data: {
-            labels: ["January", "February", "March", "April", "May", "June", "July", "January", "February", "March", "April", "May"],
-            datasets: [{
-                label: "Sales",
-                backgroundColor: "rgba(247, 163, 58, 0.1)",
-                borderColor: '#fd9d24',
-                fill: true,
-                data: [18, 41, 50, 49, 20, 65, 50, 86, 20, 30, 45, 25],
-            }]
-        },
-        // Configuration options go here
-        options: {
-            legend: {
-                display: false
-            },
-            animation: {
-                easing: "easeInOutBack"
-            },
-            scales: {
-                yAxes: [{
-                    display: !1,
-                    ticks: {
-                        fontColor: "rgba(0,0,0,0.5)",
-                        fontStyle: "bold",
-                        beginAtZero: !0,
-                        maxTicksLimit: 5,
-                        padding: 0
-                    },
-                    gridLines: {
-                        drawTicks: !1,
-                        display: !1
-                    }
-                }],
-                xAxes: [{
-                    display: !1,
-                    gridLines: {
-                        zeroLineColor: "transparent"
-                    },
-                    ticks: {
-                        padding: 0,
-                        fontColor: "rgba(0,0,0,0.5)",
-                        fontStyle: "bold"
-                    }
-                }]
+
+    $.ajax({
+        type: "POST",
+        async: false,
+        url: "Home/GetThisYearAsset",
+        success: function (result) {
+            var totalAsset = 0;
+            for (var i = 0; i < result.length; i++) {
+                totalAsset += result[i];
             }
+            document.getElementsByClassName("total-asset")[0].innerText = totalAsset + " assets"; 
+            var chart = new Chart(ctx, {
+                // The type of chart we want to create
+                type: 'line',
+                // The data for our dataset
+                data: {
+                    labels: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "Desember"],
+                    datasets: [{
+                        label: "Task",
+                        backgroundColor: "rgba(247, 163, 58, 0.1)",
+                        borderColor: '#fd9d24',
+                        fill: true,
+                        data: result,
+                    }]
+                },
+                // Configuration options go here
+                options: {
+                    legend: {
+                        display: false
+                    },
+                    animation: {
+                        easing: "easeInOutBack"
+                    },
+                    scales: {
+                        yAxes: [{
+                            display: !1,
+                            ticks: {
+                                fontColor: "rgba(0,0,0,0.5)",
+                                fontStyle: "bold",
+                                beginAtZero: !0,
+                                maxTicksLimit: 5,
+                                padding: 0
+                            },
+                            gridLines: {
+                                drawTicks: !1,
+                                display: !1
+                            }
+                        }],
+                        xAxes: [{
+                            display: !1,
+                            gridLines: {
+                                zeroLineColor: "transparent"
+                            },
+                            ticks: {
+                                padding: 0,
+                                fontColor: "rgba(0,0,0,0.5)",
+                                fontStyle: "bold"
+                            }
+                        }]
+                    }
+                }
+            });
         }
-    });
+    })
+    
 }
 
 /*--------------  coin_sales3 End ------------*/
