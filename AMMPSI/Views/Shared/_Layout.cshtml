@@ -48,7 +48,8 @@
                             <li class="@SharedNavPages.DashboardNavClass(ViewContext)">
                                 <a href="@Url.Action("Index","Home")" aria-expanded="true"><i class="ti-dashboard"></i><span>dashboard</span></a>
                             </li>
-                            @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("Employee"))
+
+                            @if (!User.IsInRole("Mover"))
                             {
                                 <li class="@SharedNavPages.AssetNavClass(ViewContext)">
                                     <a href="@Url.Action("Index","Asset")" aria-expanded="true"><i class="ti-layout-list-thumb"></i><span>asset</span></a>
@@ -56,11 +57,12 @@
                                 <li class="@SharedNavPages.CategoryNavClass(ViewContext)">
                                     <a href="@Url.Action("Index","Category")" aria-expanded="true"><i class="ti-view-list"></i><span>category</span></a>
                                 </li>
-                                <li class="@SharedNavPages.LocationNavClass(ViewContext)">
-                                    <a href="@Url.Action("Index","Location")" aria-expanded="true"><i class="ti-location-pin"></i><span>location</span></a>
-                                </li>
 
                             }
+
+                            <li class="@SharedNavPages.LocationNavClass(ViewContext)">
+                                <a href="@Url.Action("Index","Location")" aria-expanded="true"><i class="ti-location-pin"></i><span>location</span></a>
+                            </li>
 
                             <li class="@SharedNavPages.MoveNavClass(ViewContext) @SharedNavPages.CreateMoveNavClass(ViewContext) @SharedNavPages.TaskNavClass(ViewContext) @SharedNavPages.MoveLogNavClass(ViewContext)">
                                 <a href="javascript:void(0)" aria-expanded="true">
@@ -101,7 +103,6 @@
                                     </ul>
                                 </li>
                             }
-
                         </ul>
                     </nav>
                 </div>

@@ -118,6 +118,28 @@
     </div>
 </div>
 
+<div class="modal fade" id="locationAssetModal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">List of Assets</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <table id="locationAssetDataTable" class="text-center">
+                    <thead class="text-capitalize">
+                        <tr>
+                            <th>Name</th>
+                            <th>Category</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section DataTableScripts{
     <script src="~/lib/datatable/js/jquery.dataTables.min.js"></script>
     <script src="~/lib/datatable/js/dataTables.bootstrap4.min.js"></script>
@@ -171,19 +193,38 @@
                     {
                         "render": function (data, type, full, meta) {
 
-                            var returnStr = '<button class="btn btn-sm btn-success" id="btnDetailModal"><em class="fa fa-eye" style="color:white"></em></button>&nbsp;';
+                            var returnStr = '';
 
+                            @if (!User.IsInRole("Mover"))
+                            {
+                                <text>returnStr = returnStr + '<button class="btn btn-sm btn-success" id="btnDetailModal"><em class="fa fa-eye" style="color:white"></em></button>&nbsp;';</text>
+                            }
+
+                            returnStr = returnStr + '<button class="btn btn-sm btn-primary" id="btnLocationAssetModal"><em class="fa fa-archive" style="color:white"></em></button>&nbsp;';
+                            
                             @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
                             {
                                 <text>returnStr = returnStr + '<button class="btn btn-sm btn-danger" id="btnDeleteModal"><em class="fa fa-trash-o" style="color:white"></em></button>&nbsp;';</text>
 
                             }
+
                             return returnStr;
+                            
                         }
                     }
-
                 ]
+            });
 
+            var locationAssetTable = $("#locationAssetDataTable").DataTable({
+                "responsive": true,
+                "processing": true, // for show progress bar
+                "serverSide": false, // for process server side
+                "filter": true, // this is for disable filter (search box)
+                "orderMulti": false, // for disable multiple column at once
+                "columns": [
+                    { "name": "Name", "autoWidth": true },
+                    { "name": "Category", "autoWidth": true }
+                ]
             });
 
 
@@ -219,6 +260,30 @@
                 data = id;
             });
 
+            $(document).on('click', '#btnLocationAssetModal', function () {
+                var current_row = $(this).closest('tr');
+                if (current_row.hasClass('child')) {
+                    current_row = current_row.prev();
+                }
+                var id = table.row(current_row).data().ID;
+
+
+
+                $.get("/Location/GetLocationAsset?id=" + id, function (data) {
+                    locationAssetTable.clear();
+                    $.each(data, function (index, value) {
+                        locationAssetTable.row.add([
+                            value.Name,
+                            value.CategoryName
+                        ]);
+                    });
+                    locationAssetTable.draw();
+                });
+
+
+                $('#locationAssetModal').modal();
+                data = id;
+            });
 
             // Add Edit Delete Operation
             $('#detailLocationModal').on('click', '#btnSave', function () {
@@ -262,7 +327,6 @@
                 }
             });
 
-
             // Clean Data after Modal Close
 
             $('#detailLocationModal').on('hidden.bs.modal', function (e) {
@@ -284,6 +348,11 @@
                 $('#addLocationModal').find('#description').val("");
                 addLocationForm.resetForm();
             });
+
+            $('#locationAssetModal').on('hidden.bs.modal', function (e) {
+                locationAssetTable.clear();
+            });
+
         });
 
     </script>

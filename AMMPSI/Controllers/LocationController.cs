@@ -237,6 +237,39 @@ namespace AMMPSI.Controllers
             return NoContent();
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetLocationAsset(int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var movementLog = await _context.MovementLog.Where(a => a.DeletedDate == null).ToListAsync();
+            var moveLogGroupByAsset = movementLog.GroupBy(a => a.AssetID);
+
+            List<AssetViewModel> assetList = new List<AssetViewModel>(); 
+                
+            foreach (var log in moveLogGroupByAsset)
+            {
+                var asset = await _context.Asset.FindAsync(log.First().AssetID);
+                if (asset.DeletedDate == null)
+                {
+                    if (log.OrderBy(a => a.CreatedDate).LastOrDefault().LocationID == id)
+                    {
+                        var category = await _context.Category.FindAsync(asset.CategoryID);
+                        assetList.Add(new AssetViewModel
+                        {
+                            Name = asset.Name,
+                            CategoryName = category.Name
+                        });
+                    }
+                }
+            }
+
+            return Ok(assetList);
+        }
+
         private bool LocationExists(int id)
         {
             return _context.Location.Any(e => e.ID == id);
