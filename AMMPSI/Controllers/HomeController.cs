@@ -117,12 +117,15 @@ namespace AMMPSI.Controllers
 
             await Task.Run(() =>
             {
-                var data = _context.Movement.TakeLast(5);
+                var data = _context.Movement.OrderByDescending(x => x.ID).ToList().TakeLast(5);
 
                 foreach (var item in data)
                 {
+                    item.MovementItem = _context.MovementItem.Where(x => x.MovementID == item.ID).ToList();
+                    item.Location = _context.Location.Where(x => x.ID == item.LocationID).First();
                     foreach (var i in item.MovementItem)
                     {
+                        i.Asset = _context.Asset.Where(o => o.ID == i.AssetID).First();
                         dataList.Add(
                             new LastActivitiesViewModel
                             {
@@ -169,7 +172,7 @@ namespace AMMPSI.Controllers
                 //        );
             });
 
-            return Ok(dataList.ToArray());
+            return Ok(dataList.Take(5).ToArray());
         }
 
         private string ActivityTimeFunc(DateTime date)
@@ -180,7 +183,7 @@ namespace AMMPSI.Controllers
             const int DAY = 24 * HOUR;
             const int MONTH = 30 * DAY;
 
-            var ts = new TimeSpan(DateTime.UtcNow.Ticks - date.Ticks);
+            var ts = new TimeSpan(DateTime.Now.Ticks - date.Ticks);
             double delta = Math.Abs(ts.TotalSeconds);
 
             if (delta < 1 * MINUTE)

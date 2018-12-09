@@ -338,6 +338,11 @@
                 };
 
                 $.post('/Transaction/AddMoveAssetRequest', { MoveRequest: data }, function (returnedData) {
+                    swal({
+                        title: "Success!",
+                        text: "",
+                        icon: "success",
+                    });
                     table.ajax.reload();
                     console.log(returnedData);
                     $('#addCategoryModal').modal('hide');
