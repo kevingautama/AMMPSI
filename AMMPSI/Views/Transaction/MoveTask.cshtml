@@ -195,7 +195,6 @@
                     });
                     detailAssetTable.draw();
                     $("#detailMoveModal").modal();
-
                 }).fail(function () {
                     console.log("error");
                 }, "json");
@@ -204,8 +203,16 @@
             $(document).on('click', '#btnMoveAll', function () {
                 var id = $("#detailMoveModal").find("#moveId").val();
                 $.post('/Transaction/MoveAllAsset', { id: id }, function (returnedData) {
-                    console.log('done');
-
+                    $("#detailMoveModal").find("#moveId").val('');
+                    $("#detailMoveModal").find("#location").html('');
+                    $("#detailMoveModal").find("#moveDate").html('');
+                    $("#detailMoveModal").find("#description").html('');
+                    $("#detailMoveModal").find("#status").html('');
+                    $("#detailMoveModal").find("#approvedBy").html('');
+                    detailAssetTable.clear();
+                    detailAssetTable.draw();
+                    $("#detailMoveModal").modal('hide');
+                    table.ajax.reload();
                 }).fail(function () {
                     console.log("error");
                 }, "json");
@@ -218,8 +225,16 @@
                 }
                 var id = detailAssetTable.row(current_row).data()[0];
                 $.post('/Transaction/MoveSingleAsset', { id: id }, function (returnedData) {
-                    console.log('done');
-
+                    $("#detailMoveModal").find("#moveId").val('');
+                    $("#detailMoveModal").find("#location").html('');
+                    $("#detailMoveModal").find("#moveDate").html('');
+                    $("#detailMoveModal").find("#description").html('');
+                    $("#detailMoveModal").find("#status").html('');
+                    $("#detailMoveModal").find("#approvedBy").html('');
+                    detailAssetTable.clear();
+                    detailAssetTable.draw();
+                    $("#detailMoveModal").modal('hide');
+                    table.ajax.reload();
                 }).fail(function () {
                     console.log("error");
                 }, "json");

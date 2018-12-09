@@ -138,6 +138,29 @@
     </div>
 </div>
 
+<div class="modal fade" id="historyAssetModal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">History</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <table id="historyAssetDataTable" class="text-center">
+                    <thead class="text-capitalize">
+                        <tr>
+                            <th>Date</th>
+                            <th>Location</th>
+                            <th>Moved By</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section DataTableScripts{
     <script src="~/lib/datatable/js/jquery.dataTables.min.js"></script>
     <script src="~/lib/datatable/js/dataTables.bootstrap4.min.js"></script>
@@ -191,13 +214,25 @@
                     {
                         "render": function (data, type, full, meta) {
                             var returnStr = '<button class="btn btn-sm btn-success" id="btnDetailModal"><em class="fa fa-eye" style="color:white"></em></button>&nbsp;' +
+                                '<button class="btn btn-sm btn-primary" id="btnHistoryModal"><em class="fa fa-eye" style="color:white"></em></button>&nbsp;' +
                                 '<button class="btn btn-sm btn-danger" id="btnDeleteModal"><em class="fa fa-trash-o" style="color:white"></em></button>&nbsp;';
                             return returnStr;
                         }
                     }
-
                 ]
+            });
 
+            var historyAssetTable = $("#historyAssetDataTable").DataTable({
+                "serverSide": false, // for process server side
+                "filter": false, // this is for disable filter (search box)
+                "orderMulti": false, // for disable multiple column at once
+                "responsive": true,
+                "bAutoWidth": false,
+                "columns": [
+                    { "name": "Date", "autoWidth": false },
+                    { "name": "Location", "autoWidth": false },
+                    { "name" : "MovedBy", "autoWidth": false}
+                ]
             });
 
             // Load Data For Modal
@@ -244,6 +279,30 @@
                 var id = table.row(current_row).data().ID;
                 $('#deleteAssetModal').modal();
                 data = id;
+            });
+
+            $(document).on('click', '#btnHistoryModal', function () {
+                var current_row = $(this).closest('tr');
+                if (current_row.hasClass('child')) {
+                    current_row = current_row.prev();
+                }
+                var id = table.row(current_row).data().ID;
+                $.post('/Asset/GetAssetMovementLog', { assetId: id }, function (returnedData) {
+                    $(returnedData).each(function (i, data) {
+                        historyAssetTable.row.add([
+                            data.DateTime,
+                            data.LocationName,
+                            data.MovedBy
+                        ])
+                    });
+
+                    historyAssetTable.draw();
+                    $('#historyAssetModal').modal();
+                }).fail(function () {
+                    console.log("error");
+                }, "json");
+
+                historyAssetTable.clear();
             });
 
 
@@ -311,6 +370,12 @@
                 data = [];
                 $('#addAssetModal').find('#name').val("");
                 addAssetForm.resetForm();
+            });
+
+            $('#historyAssetModal').on('hidden.bs.modal', function (e) {
+                
+                historyAssetTable.clear();
+                historyAssetTable.draw();
             });
         });
 

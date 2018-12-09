@@ -321,15 +321,6 @@ namespace AMMPSI.Controllers
                 // Paging Length 10,20  
                 var length = Request.Form["length"].FirstOrDefault();
 
-                // Sort Column Name  
-                var sortColumn = Request.Form["columns[" + Request.Form["order[0][column]"].FirstOrDefault() + "][data]"].FirstOrDefault();
-
-                // Sort Column Direction (asc, desc)  
-                var sortColumnDirection = Request.Form["order[0][dir]"].FirstOrDefault();
-
-                // Search Value from (Search box)  
-                var searchValue = Request.Form["search[value]"].FirstOrDefault();
-
                 //Paging Size (10, 20, 50,100)  
                 int pageSize = length != null ? Convert.ToInt32(length) : 0;
 
@@ -338,7 +329,7 @@ namespace AMMPSI.Controllers
                 int recordsTotal = 0;
 
                 List<MovementLogViewModel> movementLogData = new List<MovementLogViewModel>();
-                var movementLogList = await _context.MovementLog.Where(a => a.DeletedDate == null).OrderBy(a => a.CreatedDate).ToListAsync();
+                var movementLogList = await _context.MovementLog.Where(a => a.DeletedDate == null).OrderByDescending(a => a.CreatedDate).ToListAsync();
 
                 var locationList = await _context.Location.Where(a => a.DeletedDate == null).ToListAsync();
 
@@ -347,7 +338,7 @@ namespace AMMPSI.Controllers
                     var asset = await _context.Asset.FindAsync(item.AssetID);
                     movementLogData.Add(new MovementLogViewModel
                     {
-                        DateTime = item.CreatedDate,
+                        DateTime = item.CreatedDate.ToShortDateString() + " " + item.CreatedDate.ToShortTimeString(),
                         AssetName = asset.Name,
                         LocationName = locationList.Where(a => a.ID == item.LocationID).FirstOrDefault().Name,
                         MovedBy = item.MovedBy
@@ -433,6 +424,8 @@ namespace AMMPSI.Controllers
             {
                 return NotFound();
             }
+
+            move.ApprovedBy = User.Identity.Name;
 
             if (await ChangeMoveStatus(move, "Accept"))
             {

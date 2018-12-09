@@ -213,6 +213,32 @@ namespace AMMPSI.Controllers
             return NoContent();
         }
 
+        [HttpPost]
+        public async Task<IActionResult> GetAssetMovementLog(int assetId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            List<MovementLogViewModel> movementLogData = new List<MovementLogViewModel>();
+            var movementLogList = await _context.MovementLog.Where(a => a.DeletedDate == null && a.AssetID == assetId).OrderByDescending(a => a.CreatedDate).ToListAsync();
+
+            var locationList = await _context.Location.Where(a => a.DeletedDate == null).ToListAsync();
+
+            foreach (var item in movementLogList)
+            {
+                movementLogData.Add(new MovementLogViewModel
+                {
+                    DateTime = item.CreatedDate.ToShortDateString() + " " + item.CreatedDate.ToShortTimeString(),
+                    LocationName = locationList.Where(a => a.ID == item.LocationID).FirstOrDefault().Name,
+                    MovedBy = item.MovedBy
+                });
+            }
+
+            return Ok(movementLogData);
+        }
+
         private bool AssetExists(int id)
         {
             return _context.Asset.Any(e => e.ID == id);

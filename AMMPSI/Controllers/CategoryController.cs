@@ -196,6 +196,15 @@ namespace AMMPSI.Controllers
             category.DeletedBy = User.Identity.Name;
             _context.Entry(category).State = EntityState.Modified;
 
+            var assetList = await _context.Asset.Where(a => a.DeletedDate == null && a.CategoryID == category.ID).ToListAsync();
+
+            foreach(var asset in assetList)
+            {
+                asset.DeletedBy = User.Identity.Name;
+                asset.DeletedDate = DateTime.Now;
+                _context.Entry(asset).State = EntityState.Modified;
+            }
+
             try
             {
                 await _context.SaveChangesAsync();

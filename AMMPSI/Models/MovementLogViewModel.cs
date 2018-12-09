@@ -7,7 +7,7 @@ namespace AMMPSI.Models
 {
     public class MovementLogViewModel : MovementLog
     {
-        public DateTime DateTime { get; set; }
+        public string DateTime { get; set; }
         public string AssetName { get; set; }
         public string LocationName { get; set; }
     }
