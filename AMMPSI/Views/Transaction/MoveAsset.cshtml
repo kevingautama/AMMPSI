@@ -376,6 +376,11 @@
                 };
 
                 $.post('/Transaction/AddMoveAssetRequest', { MoveRequest: data }, function (returnedData) {
+                    swal({
+                        title: "Success!",
+                        text: "",
+                        icon: "success",
+                    });
                     window.location.replace("/Transaction/");
                 }).fail(function () {
                     console.log("error");
