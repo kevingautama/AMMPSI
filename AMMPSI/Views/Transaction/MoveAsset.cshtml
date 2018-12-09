@@ -28,20 +28,22 @@
 
             <div>
                 <div id="step-1" class="">
-                    <div class="form-group col-xs-6">
-                        <label class="col-form-label">Location</label>
-                        <input class="form-control" type="text" id="location">
-                        <input class="form-control" type="hidden" id="locationId">
-                    </div>
-                    <div class="form-group col-xs-6">
-                        <label class="col-form-label">Move Date</label>
-                        <input class="form-control" type="date" id="moveDate">
-                    </div>
+                    <form id="moveForm">
+                        <div class="form-group col-xs-6">
+                            <label class="col-form-label">Location</label>
+                            <input class="form-control" type="text" id="location" required>
+                            <input class="form-control" type="hidden" id="locationId">
+                        </div>
+                        <div class="form-group col-xs-6">
+                            <label class="col-form-label">Move Date</label>
+                            <input class="form-control" type="date" name="moveDate" id="moveDate" required>
+                        </div>
 
-                    <div class="form-group">
-                        <label class="col-form-label">Description</label>
-                        <textarea class="form-control" rows="5" id="description"></textarea>
-                    </div>
+                        <div class="form-group">
+                            <label class="col-form-label">Description</label>
+                            <textarea class="form-control" rows="5" id="description"></textarea>
+                        </div>
+                    </form>
                 </div>
                 <div id="step-2" class="">
                     <div class="card">
@@ -141,6 +143,15 @@
     <script type="text/javascript">
 
         $(document).ready(function () {
+
+            var moveForm = $('#moveForm').validate({
+                errorElement: "div",
+                errorPlacement: function (error, element) {
+                    error.addClass("invalid-feedback");
+                    error.insertAfter(element);
+                }
+            });
+
             var tempAssetMoveList = [];
 
             $('#moveAssetWizard').smartWizard();
@@ -172,7 +183,6 @@
                     { "data": "CurrentLocation", "name": "Location", "autoWidth": false },
                     {
                         "render": function (data, type, full, meta) {
-                            console.log($("#locationId").val());
                             var returnStr = '<button class="btn btn-sm btn-success" id="btnAdd"><em class="fa fa-plus" style="color:white"></em></button>&nbsp;';
                             return returnStr;
                         }
@@ -225,10 +235,6 @@
 
             $("#moveAssetWizard").on("showStep", function (e, anchorObject, stepNumber, stepDirection) {
                 // stepnumber using zero-based index
-                if (stepNumber === 1) {
-                    assetTable.ajax.reload();
-                    tempAssetTable.draw();
-                }
 
                 if (stepNumber === 2) {
                     $("#summaryMoveDate").html($("#moveDate").val());
@@ -247,6 +253,34 @@
                     });
                     summaryAssetTable.draw();
                 }
+            });
+
+            $("#moveAssetWizard").on("leaveStep", function (e, anchorObject, stepNumber, stepDirection) {
+                if (stepNumber === 0) {
+                    if ($('#moveForm').valid()) {
+                        //if ($('#moveDate').val() === '') {
+                        //    //$('#moveDate').parent('div').append('<div id="moveDate-error" class="error invalid-feedback" style="display: block;">This field is required.</div>');
+                        //    errors = { moveDate: "Please enter an ID to check" };
+                        //    /* Show errors on the form */
+                        //    moveForm.showErrors(errors); 
+                        //} else {
+                        //    return true;
+                        //}
+                        assetTable.ajax.reload();
+                        return true;
+                    }
+                    return false;
+                }
+
+                if (stepNumber === 1) {
+                    if (stepDirection === 'forward') {
+                        if (tempAssetTable.rows().data().count() < 1) {
+                            return false;
+                        } 
+                    }
+                    return true;
+                }
+                
             });
 
             $("#location").autocomplete({
@@ -284,7 +318,10 @@
                     tempAssetTable.clear();
                 },
                 change: function (event, ui) {
-                    if (!(ui.item)) event.target.value = "";
+                    if (!(ui.item)) {
+                        event.target.value = "";
+                        $("#locationId").val("");
+                    }
                 }
             });
 
@@ -338,9 +375,7 @@
                 };
 
                 $.post('/Transaction/AddMoveAssetRequest', { MoveRequest: data }, function (returnedData) {
-                    table.ajax.reload();
-                    console.log(returnedData);
-                    $('#addCategoryModal').modal('hide');
+                    window.location.replace("/Transaction/");
                 }).fail(function () {
                     console.log("error");
                 }, "json");
