@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using AMMPSI.Models;
 using AMMPSI.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AMMPSI.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly AMContext _context;
@@ -58,7 +60,7 @@ namespace AMMPSI.Controllers
             {
                 for (int i = 1; i < 13; i++)
                 {
-                    dataList.Add(_context.Movement.Where(x => x.MovementDate.Year == DateTime.Now.Year && x.MovementDate.Month == i && x.Status.ToUpper() == "ACCEPT").Count());
+                    dataList.Add(_context.Movement.Where(x => x.MovementDate.Year == DateTime.Now.Year && x.MovementDate.Month == i && x.Status.ToUpper() == "APPROVE").Count());
                 }
             });
 
@@ -99,7 +101,7 @@ namespace AMMPSI.Controllers
             await Task.Run(() =>
             {
                 dataList.Add(_context.Movement.Where(x => x.MovementDate.Year == DateTime.Now.Year && x.MovementDate.Year == DateTime.Now.Year && x.Status.ToUpper() == "ORDER").Count());
-                dataList.Add(_context.Movement.Where(x => x.MovementDate.Year == DateTime.Now.Year && x.MovementDate.Year == DateTime.Now.Year && x.Status.ToUpper() == "ACCEPT").Count());
+                dataList.Add(_context.Movement.Where(x => x.MovementDate.Year == DateTime.Now.Year && x.MovementDate.Year == DateTime.Now.Year && x.Status.ToUpper() == "APPROVE").Count());
             });
 
             return Ok(dataList.ToArray());

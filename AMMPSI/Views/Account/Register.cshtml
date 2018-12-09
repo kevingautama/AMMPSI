@@ -1,7 +1,9 @@
 ﻿@model RegisterViewModel
+@using AMMPSI.Views.Shared
 @{
     ViewData["Title"] = "Register";
     ViewData["BreadCrumb"] = "Account";
+    ViewData.AddActivePage(SharedNavPages.CreateAccount);
 }
 
 

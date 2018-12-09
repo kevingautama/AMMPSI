@@ -1,6 +1,8 @@
-﻿@{
+﻿@using AMMPSI.Views.Shared
+@{
     ViewData["Title"] = "Move Asset";
     ViewData["BreadCrumb"] = "Transaction";
+    ViewData.AddActivePage(SharedNavPages.CreateMove);
 }
 
 @section DataTableSytleSheets{
@@ -261,7 +263,7 @@
                         //    //$('#moveDate').parent('div').append('<div id="moveDate-error" class="error invalid-feedback" style="display: block;">This field is required.</div>');
                         //    errors = { moveDate: "Please enter an ID to check" };
                         //    /* Show errors on the form */
-                        //    moveForm.showErrors(errors); 
+                        //    moveForm.showErrors(errors);
                         //} else {
                         //    return true;
                         //}
@@ -275,11 +277,11 @@
                     if (stepDirection === 'forward') {
                         if (tempAssetTable.rows().data().count() < 1) {
                             return false;
-                        } 
+                        }
                     }
                     return true;
                 }
-                
+
             });
 
             $("#location").autocomplete({
@@ -295,7 +297,7 @@
                         success: function (json) {
                             response($.map(json, function (data, id) {
                                 return {
-                                    label: data.Name + ' - Floor ' +data.Floor,
+                                    label: data.Name + ' - Floor ' + data.Floor,
                                     value: data.ID
                                 };
                             }));

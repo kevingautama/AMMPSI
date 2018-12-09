@@ -41,6 +41,13 @@ namespace AMMPSI.Data
                 var result = roleManager.CreateAsync(role).Result;
             }
 
+            if (!roleManager.RoleExistsAsync("Manager").Result)
+            {
+                var role = new IdentityRole();
+                role.Name = "Manager";
+                var result = roleManager.CreateAsync(role).Result;
+            }
+
             if (!roleManager.RoleExistsAsync("Employee").Result)
             {
                 var role = new IdentityRole();

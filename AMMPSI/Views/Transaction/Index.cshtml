@@ -1,6 +1,8 @@
-﻿@{
+﻿@using AMMPSI.Views.Shared
+@{
     ViewData["Title"] = "Transaction";
     ViewData["BreadCrumb"] = "Transaction";
+    ViewData.AddActivePage(SharedNavPages.Move);
 }
 @section DataTableSytleSheets{
     <link href="~/lib/datatable/css/jquery.dataTables.css" rel="stylesheet" />
@@ -93,9 +95,13 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" id="btnAccept" class="btn btn-success">Accept</button><button type="button" id="btnReject" class="btn btn-danger">Reject</button>
-            </div>
+            @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+            {
+                <div class="modal-footer">
+                    <button type="button" id="btnApproved" class="btn btn-success">Approve</button><button type="button" id="btnReject" class="btn btn-danger">Reject</button>
+                </div>
+            }
+
         </div>
     </div>
 </div>
@@ -113,6 +119,22 @@
             <div class="modal-footer">
                 <button type="button" data-dismiss="modal" class="btn">Cancel</button>
                 <button type="button" id="btnDelete" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="moveHistoryModal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">History</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="recent-activity text-center" id="content">
+
+                </div>
             </div>
         </div>
     </div>
@@ -154,7 +176,8 @@
                     { "data": "Status", "name": "Status", "autoWidth": true },
                     {
                         "render": function (data, type, full, meta) {
-                            var returnStr = '<button class="btn btn-sm btn-success" id="btnDetailModal"><em class="fa fa-eye" style="color:white"></em></button>&nbsp;';
+                            var returnStr = '<button class="btn btn-sm btn-success" id="btnDetailModal"><em class="fa fa-eye" style="color:white"></em></button>&nbsp;' +
+                                '<button class="btn btn-sm btn-primary" id="btnMoveHistoryModal"><em class="fa fa-eye" style="color:white"></em></button>&nbsp;';
                             return returnStr;
                         }
                     }
@@ -205,6 +228,13 @@
 
                     });
                     detailAssetTable.draw();
+                    if (returnedData.Status === 'Order') {
+                        $("#detailMoveModal").find('.modal-footer').show();
+
+                    } else {
+                        $("#detailMoveModal").find('.modal-footer').hide();
+
+                    }
                     $("#detailMoveModal").modal();
 
                 }).fail(function () {
@@ -222,9 +252,9 @@
                 data = id;
             });
 
-            $(document).on('click', '#btnAccept', function () {
+            $(document).on('click', '#btnApproved', function () {
                 var id = $("#detailMoveModal").find("#moveId").val();
-                $.post('/Transaction/AcceptMove', { id: id }, function (returnedData) {
+                $.post('/Transaction/ApproveMove', { id: id }, function (returnedData) {
                     $("#detailMoveModal").modal('hide');
                     table.ajax.reload();
                 }).fail(function () {
@@ -240,6 +270,53 @@
                 }).fail(function () {
                     console.log("error");
                 }, "json");
+            });
+
+            $(document).on('click', '#btnMoveHistoryModal', function () {
+                var current_row = $(this).closest('tr');
+                if (current_row.hasClass('child')) {
+                    current_row = current_row.prev();
+                }
+                var id = table.row(current_row).data().ID;
+
+                $.get("/Transaction/GetMoveHistory?id=" + id, function (data) {
+                    $('#moveHistoryModal').find('#content').empty();
+                    $(data.reverse()).each(function (i, data) {
+                        var html = '<div class="timeline-task"><div class="icon ';
+
+                        if (data.Action === "Order") {
+                            html = html + 'bg2';
+                        } else if (data.Action === 'Approve' || data.Action === 'Done') {
+                            html = html + 'sbg1';
+                        } else if (data.Action === 'Reject') {
+                            html = html + 'sbg3';
+                        } else if (data.Action === 'Move') {
+                            html = html + 'bg3';
+                        }
+
+                        html = html + '"><i class="fa fa-';
+
+
+                        if (data.Action === "Order") {
+                            html = html + 'reorder';
+                        } else if (data.Action === 'Approve') {
+                            html = html + 'check';
+                        } else if (data.Action === 'Reject') {
+                            html = html + 'times';
+                        } else if (data.Action === 'Move') {
+                            html = html + 'cube';
+                        } else if (data.Action === 'Done') {
+                            html = html + 'check-square';
+                        }
+
+                        html = html + '"></i></div><div class="tm-title"><h4>' + data.Message + '</h4><span class="time"><i class="ti-time"></i>' + data.DateTime + '</span></div></div>';
+
+                        $('#moveHistoryModal').find('#content').append(html);
+
+                    });
+                });
+
+                $('#moveHistoryModal').modal();
             });
         });
 

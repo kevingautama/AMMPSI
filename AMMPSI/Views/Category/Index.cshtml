@@ -1,6 +1,8 @@
-﻿@{
+﻿@using AMMPSI.Views.Shared
+@{
     ViewData["Title"] = "Category";
     ViewData["BreadCrumb"] = "Category";
+    ViewData.AddActivePage(SharedNavPages.Category);
 }
 @section DataTableSytleSheets{
     <link href="~/lib/datatable/css/jquery.dataTables.css" rel="stylesheet" />
@@ -151,8 +153,13 @@
                     {
                         "render": function (data, type, full, meta) {
 
-                            var returnStr = '<button class="btn btn-sm btn-success" id="btnDetailModal"><em class="fa fa-eye" style="color:white"></em></button>&nbsp;' +
-                                '<button class="btn btn-sm btn-danger" id="btnDeleteModal"><em class="fa fa-trash-o" style="color:white"></em></button>&nbsp;';
+                            var returnStr = '<button class="btn btn-sm btn-success" id="btnDetailModal"><em class="fa fa-eye" style="color:white"></em></button>&nbsp;';
+
+                            @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                            {
+                                <text>returnStr = returnStr + '<button class="btn btn-sm btn-danger" id="btnDeleteModal"><em class="fa fa-trash-o" style="color:white"></em></button>&nbsp;';</text>
+
+                            }
                             return returnStr;
                         }
                     }
@@ -204,9 +211,9 @@
                     }).fail(function () {
                         console.log("error");
                     }, "json");
-                } 
+                }
 
-                
+
             });
 
             $('#deleteCategoryModal').on('click', '#btnDelete', function () {
@@ -230,7 +237,7 @@
                     }).fail(function () {
                         console.log("error");
                     }, "json");
-                } 
+                }
             });
 
 

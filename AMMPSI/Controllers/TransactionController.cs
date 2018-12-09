@@ -269,7 +269,7 @@ namespace AMMPSI.Controllers
                 int recordsTotal = 0;
 
                 List<MoveViewModel> moveData = new List<MoveViewModel>();
-                var moveList = await _context.Movement.Where(a => a.Status == "Accept" && a.DeletedDate == null).ToListAsync();
+                var moveList = await _context.Movement.Where(a => a.Status == "Approve" && a.DeletedDate == null).ToListAsync();
 
                 foreach (var item in moveList)
                 {
@@ -411,7 +411,7 @@ namespace AMMPSI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AcceptMove(int id)
+        public async Task<IActionResult> ApproveMove(int id)
         {
             if (!ModelState.IsValid)
             {
@@ -427,7 +427,7 @@ namespace AMMPSI.Controllers
 
             move.ApprovedBy = User.Identity.Name;
 
-            if (await ChangeMoveStatus(move, "Accept"))
+            if (await ChangeMoveStatus(move, "Approve"))
             {
                 return NoContent();
             }
@@ -530,6 +530,82 @@ namespace AMMPSI.Controllers
             }
 
             return NotFound();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetMoveHistory(int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            List<MoveHistoryViewModel> listHistory = new List<MoveHistoryViewModel>();
+
+            Movement move = await _context.Movement.FindAsync(id);
+
+            if(move == null)
+            {
+                return NotFound();
+            }
+
+            listHistory.Add(new MoveHistoryViewModel
+            {
+                DateTime = move.CreatedDate.ToShortDateString() + " " + move.CreatedDate.ToShortTimeString(),
+                Message = "Move Request has been created",
+                Action = "Order"
+            });
+
+            if(move.UpdatedDate != null)
+            {
+                listHistory.Add(new MoveHistoryViewModel
+                {
+                    DateTime = move.UpdatedDate.Value.ToShortDateString() + " " + move.UpdatedDate.Value.ToShortTimeString(),
+                    Message = "Move Request has been " + (move.Status == "Approve" || move.Status == "Done" ? "approved" : "rejected"),
+                    Action = move.Status == "Done" ? "Approve" : move.Status 
+                });
+
+                if(move.Status == "Approve" || move.Status == "Done")
+                {
+                    List<MovementItem> listMoveLog = await _context.MovementItem.Where(a => a.MovementID == move.ID && a.DeletedDate == null).ToListAsync();
+
+                    foreach(var item in listMoveLog)
+                    {
+                        if(item.IsMoved == true)
+                        {
+                            Asset asset = _context.Asset.Where(a => a.ID == item.AssetID).FirstOrDefault();
+                            listHistory.Add(new MoveHistoryViewModel
+                            {
+                                DateTime = item.UpdatedDate.Value.ToShortDateString() + " " + item.UpdatedDate.Value.ToShortTimeString(),
+                                Message = asset.Name + " has been moved",
+                                Action = "Move"
+                            });
+                        }
+                    }
+
+                    bool flag = true;
+
+                    foreach (var item in listMoveLog)
+                    {
+                        if (item.IsMoved == false)
+                        {
+                            flag = false;
+                        }
+                    }
+
+                    if (flag)
+                    {
+                        listHistory.Add(new MoveHistoryViewModel
+                        {
+                            DateTime = listMoveLog.Max(a => a.UpdatedDate).Value.ToShortDateString() + ' ' + listMoveLog.Max(a => a.UpdatedDate).Value.ToShortTimeString(),
+                            Message = "Move Request has been done",
+                            Action = "Done"
+                        });
+                    }
+                }
+            }
+
+            return Ok(listHistory);
         }
 
         public async Task<bool> MoveItem(MovementItem item,int locationId)

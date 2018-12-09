@@ -1,6 +1,8 @@
-﻿@{
+﻿@using AMMPSI.Views.Shared
+@{
     ViewData["Title"] = "Transaction";
     ViewData["BreadCrumb"] = "Transaction";
+    ViewData.AddActivePage(SharedNavPages.MoveLog);
 }
 @section DataTableSytleSheets{
     <link href="~/lib/datatable/css/jquery.dataTables.css" rel="stylesheet" />

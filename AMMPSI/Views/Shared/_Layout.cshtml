@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using AMMPSI.Views.Shared
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -43,43 +44,63 @@
                 <div class="menu-inner">
                     <nav>
                         <ul class="metismenu" id="menu">
-                            <li class="active">
+                            <li class="@SharedNavPages.DashboardNavClass(ViewContext)">
                                 <a href="@Url.Action("Index","Home")" aria-expanded="true"><i class="ti-dashboard"></i><span>dashboard</span></a>
                             </li>
-                            <li>
-                                <a href="@Url.Action("Index","Asset")" aria-expanded="true"><i class="ti-layout-list-thumb"></i><span>asset</span></a>
-                            </li>
-                            <li>
-                                <a href="@Url.Action("Index","Category")" aria-expanded="true"><i class="ti-view-list"></i><span>category</span></a>
-                            </li>
-                            <li>
-                                <a href="@Url.Action("Index","Location")" aria-expanded="true"><i class="ti-location-pin"></i><span>location</span></a>
-                            </li>
-                            <li>
+                            @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("Employee"))
+                            {
+                                <li class="@SharedNavPages.AssetNavClass(ViewContext)">
+                                    <a href="@Url.Action("Index","Asset")" aria-expanded="true"><i class="ti-layout-list-thumb"></i><span>asset</span></a>
+                                </li>
+                                <li class="@SharedNavPages.CategoryNavClass(ViewContext)">
+                                    <a href="@Url.Action("Index","Category")" aria-expanded="true"><i class="ti-view-list"></i><span>category</span></a>
+                                </li>
+                                <li class="@SharedNavPages.LocationNavClass(ViewContext)">
+                                    <a href="@Url.Action("Index","Location")" aria-expanded="true"><i class="ti-location-pin"></i><span>location</span></a>
+                                </li>
+
+                            }
+
+                            <li class="@SharedNavPages.MoveNavClass(ViewContext) @SharedNavPages.CreateMoveNavClass(ViewContext) @SharedNavPages.TaskNavClass(ViewContext) @SharedNavPages.MoveLogNavClass(ViewContext)">
                                 <a href="javascript:void(0)" aria-expanded="true">
                                     <i class="ti-layout-sidebar-left"></i><span>
                                         transaction
                                     </span>
                                 </a>
                                 <ul class="collapse">
-                                    <li><a href="@Url.Action("Index","Transaction")">approval</a></li>
-                                    <li><a href="@Url.Action("MoveAsset","Transaction")">move</a></li>
-                                    <li><a href="@Url.Action("MoveTask","Transaction")">task</a></li>
-                                    <li><a href="@Url.Action("MoveLog","Transaction")">history</a></li>
+                                    @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("Employee"))
+                                    {
+                                        <li class="@SharedNavPages.MoveNavClass(ViewContext)"><a href="@Url.Action("Index","Transaction")">approval</a></li>
+                                    }
+                                    @if (!User.IsInRole("Mover"))
+                                    {
+                                        <li class="@SharedNavPages.CreateMoveNavClass(ViewContext)"><a href="@Url.Action("MoveAsset","Transaction")">move</a></li>
+                                    }
+
+                                    @if (!User.IsInRole("Employee"))
+                                    {
+                                        <li class="@SharedNavPages.TaskNavClass(ViewContext)"><a href="@Url.Action("MoveTask","Transaction")">task</a></li>
+                                    }
+                                    <li class="@SharedNavPages.MoveLogNavClass(ViewContext)"><a href="@Url.Action("MoveLog","Transaction")">history</a></li>
                                 </ul>
                             </li>
-                            <li>
-                                <a href="javascript:void(0)" aria-expanded="true">
-                                    <i class="ti-user"></i><span>
-                                        account
-                                    </span>
-                                </a>
-                                <ul class="collapse">
-                                    <li><a href="@Url.Action("Register","Account")">add account</a></li>
-                                    <li><a href="@Url.Action("Index","Account")">account list</a></li>
-                                    @*<li><a href="@Url.Action("Role","Account")">role</a></li>*@
-                                </ul>
-                            </li>
+
+                            @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                            {
+                                <li class="@SharedNavPages.CreateAccountNavClass(ViewContext) @SharedNavPages.AccountNavClass(ViewContext)">
+                                    <a href="javascript:void(0)" aria-expanded="true">
+                                        <i class="ti-user"></i><span>
+                                            account
+                                        </span>
+                                    </a>
+                                    <ul class="collapse">
+                                        <li class="@SharedNavPages.CreateAccountNavClass(ViewContext)"><a href="@Url.Action("Register","Account")">add account</a></li>
+                                        <li class="@SharedNavPages.AccountNavClass(ViewContext)"><a href="@Url.Action("Index","Account")">account list</a></li>
+                                        @*<li><a href="@Url.Action("Role","Account")">role</a></li>*@
+                                    </ul>
+                                </li>
+                            }
+
                         </ul>
                     </nav>
                 </div>

@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace AMMPSI.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin,Manager,Employee")]
     public class CategoryController : Controller
     {
         private readonly AMContext _context;
