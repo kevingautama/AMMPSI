@@ -119,59 +119,24 @@ namespace AMMPSI.Controllers
 
             await Task.Run(() =>
             {
-                var data = _context.Movement.OrderByDescending(x => x.ID).ToList().TakeLast(5);
+                var data = _context.MovementLog.OrderByDescending(x => x.ID).ToList().TakeLast(5);
 
                 foreach (var item in data)
                 {
-                    item.MovementItem = _context.MovementItem.Where(x => x.MovementID == item.ID).ToList();
-                    item.Location = _context.Location.Where(x => x.ID == item.LocationID).First();
-                    foreach (var i in item.MovementItem)
-                    {
-                        i.Asset = _context.Asset.Where(o => o.ID == i.AssetID).First();
-                        dataList.Add(
-                            new LastActivitiesViewModel
-                            {
-                                UserName = item.CreatedBy,
-                                AssetName = i.Asset.Name,
-                                Status = item.Status,
-                                CurrentLocation = item.Location.Name,
-                                ActivityTime = ActivityTimeFunc(item.CreatedDate)
-                            }
-                        );
-                    }
+                    item.Asset = _context.Asset.FirstOrDefault(x => x.ID == item.AssetID);
+                    item.Location = _context.Location.FirstOrDefault(x => x.ID == item.LocationID);
 
+                    dataList.Add(
+                              new LastActivitiesViewModel
+                              {
+                                  UserName = item.CreatedBy,
+                                  AssetName = item.Asset.Name,
+                                  Status = item.MovedBy,
+                                  CurrentLocation = item.Location.Name,
+                                  ActivityTime = ActivityTimeFunc(item.CreatedDate)
+                              }
+                          );
                 }
-
-                //dataList.Add(
-                //            new LastActivitiesViewModel
-                //            {
-                //                UserName = "Ryan Gunawan",
-                //                AssetName = "Meja",
-                //                Status = "ORDER",
-                //                CurrentLocation = "Dapur",
-                //                ActivityTime = "5 hours ago"
-                //            }
-                //        );
-                //dataList.Add(
-                //            new LastActivitiesViewModel
-                //            {
-                //                UserName = "Ryan Gunawan",
-                //                AssetName = "Meja",
-                //                Status = "ORDER",
-                //                CurrentLocation = "Dapur",
-                //                ActivityTime = "5 hours ago"
-                //            }
-                //        );
-                //dataList.Add(
-                //            new LastActivitiesViewModel
-                //            {
-                //                UserName = "Ryan Gunawan",
-                //                AssetName = "Meja",
-                //                Status = "ORDER",
-                //                CurrentLocation = "Dapur",
-                //                ActivityTime = "5 hours ago"
-                //            }
-                //        );
             });
 
             return Ok(dataList.Take(5).ToArray());
