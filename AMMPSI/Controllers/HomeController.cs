@@ -131,7 +131,6 @@ namespace AMMPSI.Controllers
                               {
                                   UserName = item.CreatedBy,
                                   AssetName = item.Asset.Name,
-                                  Status = item.MovedBy,
                                   CurrentLocation = item.Location.Name,
                                   ActivityTime = ActivityTimeFunc(item.CreatedDate)
                               }
