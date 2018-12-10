@@ -107,13 +107,14 @@
                 url: "Home/GetLastActivities",
                 success: function (result) {
                     var tableClass = document.getElementsByClassName("la-table")[0];
-                    for (var i = 0; i < result.length; i++) {
+                    var logList = result.reverse();
+                    for (var i = 0; i < logList.length; i++) {
                         var tr = document.createElement('tr');
                         tr.innerHTML =
-                            "<td class='text-center'>" + result[i].UserName + "</td>" +
-                            "<td class='text-center'>" + result[i].AssetName + "</td>" +
-                            "<td class='text-center'>" + result[i].CurrentLocation + "</td>" +
-                            "<td class='text-center'>" + result[i].ActivityTime + "</td>";
+                            "<td class='text-center'>" + logList[i].UserName + "</td>" +
+                            "<td class='text-center'>" + logList[i].AssetName + "</td>" +
+                            "<td class='text-center'>" + logList[i].CurrentLocation + "</td>" +
+                            "<td class='text-center'>" + logList[i].ActivityTime + "</td>";
 
                         tableClass.appendChild(tr);
                     }

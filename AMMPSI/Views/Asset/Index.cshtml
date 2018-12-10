@@ -17,7 +17,7 @@
         <div class="card">
             <div class="card-body">
                 <h4 class="header-title"><button type="button" id="btnAddModal" class="btn btn-sm btn-primary">Add</button></h4>
-                <div class="data-tables datatable-primary">
+                <div class="data-tables datatable-dark">
                     <table id="AssetDataTable" class="text-center">
                         <thead class="text-capitalize">
                             <tr>
@@ -148,16 +148,18 @@
                 <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <div class="modal-body">
-                <table id="historyAssetDataTable" class="text-center">
-                    <thead class="text-capitalize">
-                        <tr>
-                            <th>Date</th>
-                            <th>Location</th>
-                            <th>Moved By</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+                <div class="data-tables datatable-dark">
+                    <table id="historyAssetDataTable" class="text-center">
+                        <thead class="text-capitalize">
+                            <tr>
+                                <th>Date</th>
+                                <th>Location</th>
+                                <th>Moved By</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div> 
             </div>
         </div>
     </div>
@@ -173,6 +175,13 @@
 @section Scripts{
     <script>
         $(document).ready(function () {
+
+            $(window).keydown(function (event) {
+                if (event.keyCode == 13) {
+                    event.preventDefault();
+                    return false;
+                }
+            });
 
             var addAssetForm = $('#addAssetForm').validate({
                 errorElement: "div",
@@ -263,13 +272,18 @@
                     $.get("/Category/GetCategory", function (data) {
                         $('#detailAssetModal').find('#category').empty();
                         $.each(data, function (index, value) {
-                            $('<option>').val(value.ID).text(value.Name).appendTo($('#detailAssetModal').find('#category'));
+                            if (value.ID == returnedData.CategoryID) {
+                                $('<option selected>').val(value.ID).text(value.Name).appendTo($('#detailAssetModal').find('#category'));
+                            } else {
+                                $('<option>').val(value.ID).text(value.Name).appendTo($('#detailAssetModal').find('#category'));
+                            }
+                           
                         });
                     });
                     data = returnedData;
                     $('#detailAssetModal').find('#name').val(data.Name);
                     $('#detailAssetModal').find('#value').val(data.Value);
-                    $('#detailAssetModal').find('#category').val(data.CategoryID);
+                    //$('#detailAssetModal').find('#category').text(data.CategoryID);
                     $('#detailAssetModal').find('#isMoveable').val(data.IsMoveable.toString());
                     $('#detailAssetModal').find('#description').val(data.Description);
                     $('#detailAssetModal').modal();
@@ -376,6 +390,10 @@
             $('#addAssetModal').on('hidden.bs.modal', function (e) {
                 data = [];
                 $('#addAssetModal').find('#name').val("");
+                $('#addAssetModal').find('#name').val("");
+                $('#addAssetModal').find('#value').val("");
+                $('#addAssetModal').find('#category').val("");
+                $('#addAssetModal').find('#description').val("");
                 addAssetForm.resetForm();
             });
 

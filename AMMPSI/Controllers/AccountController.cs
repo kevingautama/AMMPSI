@@ -213,7 +213,8 @@ namespace AMMPSI.Controllers
         [AllowAnonymous]
         public IActionResult Register(string returnUrl = null)
         {
-            var roleList = _roleManager.Roles.ToList();
+            var roleList = _roleManager.Roles.Where(a => a.Name != "Admin").ToList();
+
             ViewBag.Role = new SelectList(roleList, "Name", "Name");
 
             ViewData["ReturnUrl"] = returnUrl;
@@ -243,7 +244,7 @@ namespace AMMPSI.Controllers
                     var resultAddRole = await _userManager.AddToRoleAsync(user, model.Role);
                     if (resultAddRole.Succeeded)
                     {
-                        return RedirectToLocal(returnUrl);
+                        return RedirectToAction(nameof(Index));
                     }
                     else
                     {

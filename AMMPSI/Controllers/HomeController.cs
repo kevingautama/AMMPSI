@@ -119,7 +119,7 @@ namespace AMMPSI.Controllers
 
             await Task.Run(() =>
             {
-                var data = _context.MovementLog.OrderByDescending(x => x.ID).ToList().TakeLast(5);
+                var data = _context.MovementLog.OrderBy(x => x.CreatedDate).ToList().TakeLast(5);
 
                 foreach (var item in data)
                 {
@@ -138,7 +138,7 @@ namespace AMMPSI.Controllers
                 }
             });
 
-            return Ok(dataList.Take(5).ToArray());
+            return Ok(dataList.ToArray());
         }
 
         private string ActivityTimeFunc(DateTime date)

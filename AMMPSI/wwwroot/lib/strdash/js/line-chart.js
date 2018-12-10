@@ -90,7 +90,7 @@ if ($('#coin_sales2').length) {
                 data: {
                     labels: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "Desember"],
                     datasets: [{
-                        label: "Approval",
+                        label: "Task",
                         backgroundColor: "rgba(240, 180, 26, 0.1)",
                         borderColor: '#F0B41A',
                         data: result,
@@ -160,7 +160,7 @@ if ($('#coin_sales3').length) {
                 data: {
                     labels: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "Desember"],
                     datasets: [{
-                        label: "Task",
+                        label: "Asset",
                         backgroundColor: "rgba(247, 163, 58, 0.1)",
                         borderColor: '#fd9d24',
                         fill: true,

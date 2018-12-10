@@ -17,7 +17,7 @@
         <div class="card">
             <div class="card-body">
                 <h4 class="header-title"><button type="button" id="btnAddModal" class="btn btn-sm btn-primary">Add</button></h4>
-                <div class="data-tables datatable-primary">
+                <div class="data-tables datatable-dark">
                     <table id="categoryDataTable" class="text-center">
                         <thead class="text-capitalize">
                             <tr>
@@ -111,6 +111,13 @@
 @section Scripts{
     <script>
         $(document).ready(function () {
+
+            $(window).keydown(function (event) {
+                if (event.keyCode == 13) {
+                    event.preventDefault();
+                    return false;
+                }
+            });
 
             var addCategoryForm = $('#addCategoryForm').validate({
                 errorElement: "div",

@@ -51,7 +51,7 @@
                     <div class="card">
                         <div class="card-body">
                             <h4 class="header-title">Search Asset</h4>
-                            <div class="data-tables datatable-primary">
+                            <div class="data-tables datatable-dark">
                                 <table id="assetMoveableDataTable" class="text-center">
                                     <thead class="text-capitalize">
                                         <tr>
@@ -145,6 +145,13 @@
     <script type="text/javascript">
 
         $(document).ready(function () {
+
+            $(window).keydown(function (event) {
+                if (event.keyCode == 13) {
+                    event.preventDefault();
+                    return false;
+                }
+            });
 
             var moveForm = $('#moveForm').validate({
                 errorElement: "div",

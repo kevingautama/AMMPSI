@@ -115,7 +115,7 @@ namespace AMMPSI.Controllers
 
                 List<AssetViewModel> assetData = new List<AssetViewModel>();
                 // getting all Proposal data 
-                var assetList = await _context.Asset.Where(a => a.DeletedDate == null).ToListAsync();
+                var assetList = await _context.Asset.Where(a => a.DeletedDate == null && a.IsMoveable == true).ToListAsync();
                 var locationList = await _context.Location.ToListAsync();
 
                 foreach (var item in assetList)
@@ -391,16 +391,26 @@ namespace AMMPSI.Controllers
 
             if (moveAssetList.Any())
             {
-                foreach(var item in moveAssetList)
+                var locationList = await _context.Location.ToListAsync();
+
+                foreach (var item in moveAssetList)
                 {
                     var asset = await _context.Asset.FindAsync(item.AssetID);
                     var category = await _context.Category.FindAsync(asset.CategoryID);
+
+                    var latestLog = await _context.MovementLog.Where(a => a.AssetID == item.AssetID).OrderBy(a => a.CreatedDate).LastOrDefaultAsync();
+                    string lastLocation = "-";
+                    if (latestLog != null)
+                    {
+                        lastLocation = locationList.Where(a => a.ID == latestLog.LocationID).FirstOrDefault().Name;
+                    }
+
                     data.MoveAssetList.Add(new MoveItemViewModel
                     {
                         ID = item.ID,
                         Name = asset.Name,
                         CategoryName = category.Name,
-                        CurrentLocation = "room1",
+                        CurrentLocation = lastLocation,
                         IsMoved = item.IsMoved
                     });
                 }
