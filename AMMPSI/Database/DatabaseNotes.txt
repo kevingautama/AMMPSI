@@ -1,0 +1,7 @@
+﻿existing user for AMMPSI
+------------|------------
+admin        admin123
+mover        mover123
+manager      manager123
+employee     employee123
+

@@ -210,7 +210,6 @@ namespace AMMPSI.Controllers
         }
 
         [HttpGet]
-        [AllowAnonymous]
         public IActionResult Register(string returnUrl = null)
         {
             var roleList = _roleManager.Roles.Where(a => a.Name != "Admin").ToList();
